@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"net/url"
 
-	socketio "github.com/googollee/go-socket.io"
+	"github.com/gorilla/websocket"
 	"github.com/victorgomez09/f1-tracker.git/utils"
 )
 
@@ -41,27 +41,21 @@ func InitStream() {
 		cookie := response.Header.Get("Set-cookie")
 		var response NegotiationResponse
 		json.Unmarshal(body, &response)
-		
+
 		u := url.URL{Scheme: "wss", Host: utils.WssUrl, Path: "/signalr/connect?clientProtocol=1.5&transport=webSockets&connectionToken=" + url.QueryEscape(response.ConnectionToken) + "&connectionData=" + utils.SignalrHubParsed + ""}
 		log.Printf("connecting to %s", u.String())
 
-		client, err := socketio.NewClient(u.String(), nil)
+		c, resp, err := websocket.DefaultDialer.Dial(u.String(), http.Header{
+			"User-Agent":      []string{"BestHTTP"},
+			"Accept-Encoding": []string{"gzip,identity"},
+			"Cookie":          []string{cookie},
+		})
+
 		if err != nil {
-			panic(err)
+			log.Printf("handshake failed with status %d", resp.StatusCode)
+			log.Fatal("dial:", err)
 		}
-	
-
-		// c, resp, err := websocket.DefaultDialer.Dial(u.String(), http.Header{
-		// 	"User-Agent": []string{"BestHTTP"},
-		// 	"Accept-Encoding": []string{"gzip,identity"},
-		// 	"Cookie": []string{cookie},
-		// })
-
-		// if err != nil {
-		// 	log.Printf("handshake failed with status %d", resp.StatusCode)
-		// 	log.Fatal("dial:", err)
-		// }
-		// //When the program closes close the connection
-		// defer c.Close()
+		//When the program closes close the connection
+		defer c.Close()
 	}
 }
