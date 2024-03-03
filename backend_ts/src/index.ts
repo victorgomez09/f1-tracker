@@ -13,18 +13,14 @@ server.listen(serverPort, async () => {
 
   const ws = new WebSocketServer({ port: Number(wsPort) });
   console.log(`Running ws on port. ${Number(wsPort)}`);
-  ws.on("open", () => {
-    console.log("open");
-  });
-  //   ws.on("f1-socket", function message(data) {
-  //     console.log("received: %s", data);
-  //   });
+
   ws.on("connection", async (ws: WebSocket) => {
     console.log("client connected");
     ws.on("f1-socket", (data) => {
       ws.send(data);
     });
 
+    console.log(f1_ws);
     if (!f1_ws) {
       await setupF1(ws);
     } else {
