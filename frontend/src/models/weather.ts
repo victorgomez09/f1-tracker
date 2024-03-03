@@ -1,9 +1,9 @@
 export type F1WeatherData = {
-  airTemp: number;
+  air_temp: number;
+  track_temp: number;
   humidity: number;
   pressure: number;
   rainfall: number;
-  trackTemp: number;
-  windDirection: number;
-  windSpeed: number;
+  wind_direction: number;
+  wind_speed: number;
 };

@@ -1,5 +1,5 @@
 export type F1ExtrapolatedClock = {
-  utc: Date;
-  remaining: Date;
+  utc: string;
+  remaining: string;
   extrapolating: boolean;
 };
