@@ -16,13 +16,8 @@ const messagesSorted = computed(() => props.messages?.sort(sortUtc));
 
 <template>
   <ul class="flex flex-col gap-2 p-2">
-    <li
-      class="grid grid-rows-1 grid-cols-12 gap-1"
-      v-for="msg in messagesSorted"
-    >
-      <div
-        class="flex items-center gap-1 text-sm font-medium whitespace-nowrap leading-none w-full"
-      >
+    <li class="flex items-center text-nowrap" v-for="msg in messagesSorted">
+      <div class="mr-2">
         <time :dateTime="moment.utc(msg.utc).local().format('HH:mm:ss')">{{
           moment.utc(msg.utc).local().format("HH:mm:ss")
         }}</time>

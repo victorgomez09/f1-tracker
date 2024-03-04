@@ -30,9 +30,7 @@ watchEffect(async () => {
 </script>
 
 <template>
-  <div
-    className="grid grid-rows-1 grid-flow-col items-center gap-3 place-self-start"
-  >
+  <div className="grid grid-rows-1 grid-flow-col items-center gap-3">
     <div class="indicator">
       <span
         class="indicator-item badge badge-xs"

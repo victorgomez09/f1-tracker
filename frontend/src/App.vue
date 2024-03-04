@@ -10,6 +10,7 @@ const connected = ref(false);
 const blocking = ref(false);
 
 const liveState = ref({});
+const dataUpdated = ref(false);
 const updated = ref(new Date());
 
 const initWebsocket = (handleMessage: any) => {
@@ -24,7 +25,9 @@ const initWebsocket = (handleMessage: any) => {
   //   (window.location.port ? `:${window.location.port}` : "") +
   //   "/ws";
 
-  const wsUrl = "ws://localhost:3001";
+  const wsUrl =
+    "wss://3001-victorgomez09-f1tracker-zuw71jj3ixf.ws-eu108.gitpod.io";
+  // const wsUrl = "ws://localhost:3001";
 
   const ws = new WebSocket(wsUrl);
 
@@ -64,6 +67,7 @@ onMounted(() =>
       liveState.value = d;
       updated.value = new Date();
       dashboardData.data = d;
+      dataUpdated.value = true;
     } catch (e) {
       console.error(`could not process message: ${e}`);
     }
@@ -73,6 +77,6 @@ onMounted(() =>
 
 <template>
   <div class="flex flex-1 h-full w-full">
-    <router-view></router-view>
+    <router-view v-if="connected && dataUpdated"></router-view>
   </div>
 </template>

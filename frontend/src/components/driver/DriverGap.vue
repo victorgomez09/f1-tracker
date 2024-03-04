@@ -11,7 +11,7 @@ const props = defineProps({
     <div class="grid grid-rows-1 grid-flow-col items-center gap-2 w-full">
       <span class="font-semibold justify-self-start">Gap</span>
       <p class="text-lg font-semibold leading-none justify-self-end">
-        {{ !!props.gapToFront ? props.gapToFront : "-- -- ---" }}
+        {{ !!props.gapToFront ? props.gapToFront : "+--.---" }}
       </p>
     </div>
 
@@ -19,7 +19,7 @@ const props = defineProps({
     <div class="grid grid-rows-1 grid-flow-col items-center gap-2 w-full">
       <span class="font-semibold justify-self-start">Ldr</span>
       <p class="text-lg font-semibold leading-none justify-self-end">
-        {{ !!props.gapToLeader ? props.gapToLeader : "-- -- ---" }}
+        {{ !!props.gapToLeader ? props.gapToLeader : "---.---" }}
       </p>
     </div>
   </div>

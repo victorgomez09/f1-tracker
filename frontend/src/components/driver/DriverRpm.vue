@@ -12,7 +12,7 @@ const rpmGauge = computed(() => (props.rpm! / 15000) * 100);
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="flex flex-col w-12">
     <!-- <div className="flex items-center justify-center text-blue-500">
       <svg
         className="h-9 w-9"
@@ -45,7 +45,7 @@ const rpmGauge = computed(() => (props.rpm! / 15000) * 100);
     </div>
 
     <progress
-      class="progress progress-secondary w-56"
+      class="progress progress-secondary"
       :value="rpmGauge"
       max="100"
     ></progress>

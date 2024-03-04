@@ -19,7 +19,10 @@ const props = defineProps({
 
 <template>
   <div
-    class="flex items-center justify-between gap-4 p-2 h-18 w-full"
+    class="grid place-items-center items-center gap-1 py-1"
+    :style="{
+      gridTemplateColumns: '1.5fr 1fr 1fr 1fr 2fr 2fr 3fr 1.5fr',
+    }"
     :class="[
       {
         'opacity-50':
