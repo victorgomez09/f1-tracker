@@ -2,7 +2,8 @@
 import type { PropType } from "vue";
 
 import DriverTag from "./DriverTag.vue";
-import DiverDrs from "./DriverDrs.vue";
+import DriverDrs from "./DriverDrs.vue";
+import DriverRpm from "./DriverRpm.vue";
 import { F1Driver } from "../models/driver.model";
 
 const props = defineProps({
@@ -33,9 +34,16 @@ const props = defineProps({
       :short="props.driver?.short"
     />
 
-    <DiverDrs
+    <DriverDrs
       :drs="props.driver?.drs"
       :positionsChanged="props.driver?.positionChange"
+    />
+
+    <DriverRpm
+      :rpm="props.driver?.metrics.rpm"
+      :gear="props.driver?.metrics.gear"
+      :speed="props.driver?.metrics.speed"
+      :status="props.driver?.status!"
     />
   </div>
 </template>
