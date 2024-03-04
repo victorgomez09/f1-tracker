@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PropType, computed } from "vue";
-import { Drs } from "../models/driver.model";
+import { Drs } from "../../models/driver.model";
 
 const props = defineProps({
   positionsChanged: Number,
@@ -16,6 +16,7 @@ const pit = props.status === "PIT" || props.status === "PIT OUT";
 <template>
   <div class="flex flex-col">
     <span
+      class="front-semibold text-center"
       :class="[
         {
           'text-success': gain,
@@ -34,7 +35,7 @@ const pit = props.status === "PIT" || props.status === "PIT OUT";
     </span>
 
     <span
-      class="text-sm inline-flex items-center justify-center rounded-md border-2 font-bold px-1 h-6 w-full"
+      class="text-sm inline-flex items-center justify-center rounded-md border-2 font-bold h-6"
       :class="[
         {
           'border-gray-500 text-gray-500':
@@ -52,3 +53,4 @@ const pit = props.status === "PIT" || props.status === "PIT OUT";
     </span>
   </div>
 </template>
+../../models/driver.model

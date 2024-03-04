@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, isProxy, ref, toRaw, watchEffect } from "vue";
-import moment from "moment";
+import { computed, isProxy, toRaw } from "vue";
 
-import Driver from "../components/Driver.vue";
+import RaceDetails from "../components/race-details/RaceDetails.vue";
+import Driver from "../components/driver/Driver.vue";
+import RaceControl from "../components/race-control/RaceControl.vue";
+
 import { dashboardData } from "../store/data.store";
-import { getTrackStatusMessage } from "../utils/track.util";
-import { getWindDirection } from "../utils/wind.util";
 import { sortPos } from "../utils/position.utils";
 
 const data = isProxy(dashboardData)
@@ -17,140 +17,343 @@ const { trackStatus } = data;
 const { weather } = data;
 const { extrapolatedClock } = data;
 const { drivers } = data;
+const { raceControlMessages } = data;
 
-const countryFlag = ref();
-watchEffect(async () => {
-  countryFlag.value = (
-    await import(
-      /* @vite-ignore */ `../assets/country-flags/${session.countryCode.toLowerCase()}.svg`
-    )
-  ).default;
-});
-const timeRemaining = computed(() => {
-  return !!extrapolatedClock && !!extrapolatedClock.remaining
-    ? extrapolatedClock.extrapolating
-      ? moment
-          .utc(
-            moment
-              .duration(extrapolatedClock.remaining)
-              .subtract(moment.utc().diff(moment.utc(extrapolatedClock.utc)))
-              // .asMilliseconds() + (delay ? delay * 1000 : 0),
-              .asMilliseconds()
-          )
-          .format("HH:mm:ss")
-      : extrapolatedClock.remaining
-    : undefined;
-});
-const trackStatusInfo = computed(() => {
-  return getTrackStatusMessage(trackStatus.status);
-});
-const windDirection = computed(() => {
-  return getWindDirection(weather.wind_direction);
-});
 const driversSorted = computed(() => {
   return drivers.sort(sortPos);
 });
 </script>
 
 <template>
-  <div class="flex flex-col flex-1 w-full h-full">
-    <!-- Header -->
-    <div
-      class="flex flex-1 flex-wrap items-center gap-2 border-b border-b-primary p-4"
-    >
-      <!-- Session info -->
-      <div class="flex flex-col gap-2">
-        <!-- <h5 class="font-semibold">{{ session.officialName }}</h5> -->
-        <div class="flex items-center gap-2">
-          <div class="flex items-center gap-2">
-            <img
-              class="relative overflow-hidden rounded h-12 w-16"
-              :src="countryFlag"
-              alt="Country flag"
+  <!-- <div class="flex flex-col flex-1 bg-base-300 min-h-screen">
+    
+
+    <div class="relative flex flex-grow">
+      <main class="flex flex-1 overflow-scroll">
+        <div class="grid grid-cols-3 w-full h-full">
+          <div class="col-span-2 overflow-scroll h-dvh w-dvw">
+            <h3 class="font-bold text-lg bg-base-100 p-2">Live Timming</h3>
+            <Driver
+              v-for="driver in driversSorted"
+              :driver="driver"
+              :position="driver.position"
             />
+          </div>
 
-            <div class="flex flex-col">
-              <span class="font-semibold"
-                >{{ session.name }}: {{ session.type }}</span
-              >
-              <div class="flex items-center gap-2">
-                <span class="text-3xl font-bold">{{ timeRemaining }}</span>
-
-                <span class="badge badge-lg" :class="trackStatusInfo?.color">{{
-                  trackStatusInfo?.message
-                }}</span>
-              </div>
-            </div>
-
-            <!-- Weather -->
-            <div class="flex gap-4">
-              <div class="flex flex-col">
-                <span class="font-semibold">Wind speed</span>
-                <span class="text-xl font-bold">
-                  {{ weather.wind_speed }} km/h
-                </span>
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Wind direction</span>
-                <span class="flex items-center text-xl font-bold">
-                  {{ windDirection }}
-                  <img
-                    src="../assets/icons/arrow-up.svg"
-                    alt="arrow"
-                    :style="[
-                      { rotate: `${weather.wind_direction}deg` },
-                      { transition: '1s linear' },
-                    ]"
-                  />
-                </span>
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Air temp</span>
-                <span class="text-xl font-bold">{{ weather.air_temp }}ºC</span>
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Track temp</span>
-                <span class="text-xl font-bold"
-                  >{{ weather.track_temp }}ºC</span
-                >
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Wind</span>
-                <span class="text-xl font-bold"
-                  >{{ weather.track_temp }}ºC</span
-                >
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Humidity</span>
-                <span class="text-xl font-bold">{{ weather.humidity }}%</span>
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Pressure</span>
-                <span class="text-xl font-bold">{{ weather.pressure }} mb</span>
-              </div>
-
-              <div class="flex flex-col">
-                <span class="font-semibold">Rainfall</span>
-                <span class="text-xl font-bold">{{ weather.rainfall }}%</span>
-              </div>
-            </div>
+          <div class="w-full overflow-auto">
+            <h3 class="font-bold text-lg bg-base-100 p-2">Race Control</h3>
+            <RaceControl :messages="raceControlMessages" />
           </div>
         </div>
-      </div>
+      </main>
     </div>
+  </div> -->
 
-    <div>
-      <Driver
-        v-for="driver in driversSorted"
-        :driver="driver"
-        :position="driver.position"
-      />
+  <div class="flex flex-col flex-1 bg-base-300">
+    <RaceDetails
+      :session="session"
+      :trackStatus="trackStatus"
+      :weather="weather"
+      :extrapolatedClock="extrapolatedClock"
+    />
+
+    <div class="grid grid-cols-3 overflow-auto">
+      <div class="col-span-2 overflow-auto">
+        <h3 class="font-bold text-lg bg-base-100 p-2">Live Timming</h3>
+        <Driver
+          v-for="driver in driversSorted"
+          :driver="driver"
+          :position="driver.position"
+        />
+      </div>
+
+      <div class="overflow-auto">
+        <h3 class="font-bold text-lg bg-base-100 p-2">Race Control</h3>
+        <RaceControl :messages="raceControlMessages" />
+      </div>
+      <!-- <div
+        class="p-4 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-700"
+      >
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div
+            class="flex items-center justify-center h-24 rounded bg-gray-50 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center h-24 rounded bg-gray-50 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center h-24 rounded bg-gray-50 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-center h-48 mb-4 rounded bg-gray-50 dark:bg-gray-800"
+        >
+          <p class="text-2xl text-gray-400 dark:text-gray-500">
+            <svg
+              class="w-3.5 h-3.5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 18 18"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 1v16M1 9h16"
+              />
+            </svg>
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+        </div>
+        <div
+          class="flex items-center justify-center h-48 mb-4 rounded bg-gray-50 dark:bg-gray-800"
+        >
+          <p class="text-2xl text-gray-400 dark:text-gray-500">
+            <svg
+              class="w-3.5 h-3.5"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 18 18"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 1v16M1 9h16"
+              />
+            </svg>
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-center rounded bg-gray-50 h-28 dark:bg-gray-800"
+          >
+            <p class="text-2xl text-gray-400 dark:text-gray-500">
+              <svg
+                class="w-3.5 h-3.5"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 18 18"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 1v16M1 9h16"
+                />
+              </svg>
+            </p>
+          </div>
+        </div>
+      </div> -->
     </div>
   </div>
 </template>

@@ -4,7 +4,12 @@ import type { PropType } from "vue";
 import DriverTag from "./DriverTag.vue";
 import DriverDrs from "./DriverDrs.vue";
 import DriverRpm from "./DriverRpm.vue";
-import { F1Driver } from "../models/driver.model";
+import DriverSpeed from "./DriverSpeed.vue";
+import DriverLaps from "./DriverLaps.vue";
+import DriverGap from "./DriverGap.vue";
+import DriverSectors from "./DriverSectors.vue";
+import DriverTyres from "./DriverTyres.vue";
+import { F1Driver } from "../../models/driver.model";
 
 const props = defineProps({
   driver: Object as PropType<F1Driver>,
@@ -14,7 +19,7 @@ const props = defineProps({
 
 <template>
   <div
-    class="flex items-center gap-2 p-2 h-18"
+    class="flex items-center justify-between gap-4 p-2 h-18 w-full"
     :class="[
       {
         'opacity-50':
@@ -45,5 +50,28 @@ const props = defineProps({
       :speed="props.driver?.metrics.speed"
       :status="props.driver?.status!"
     />
+
+    <DriverSpeed
+      :speed="props.driver?.metrics.speed"
+      :status="props.driver?.status!"
+    />
+
+    <DriverLaps
+      :best="props.driver?.lapTimes.best"
+      :last="props.driver?.lapTimes.last"
+    />
+
+    <DriverGap
+      :gapToFront="props.driver?.gapToFront"
+      :gapToLeader="props.driver?.gapToLeader"
+    />
+
+    <DriverSectors
+      :sectors="props.driver?.sectors"
+      :driverDisplayName="props.driver?.short"
+    />
+
+    <DriverTyres :stints="props.driver?.stints" />
   </div>
 </template>
+../../models/driver.model
