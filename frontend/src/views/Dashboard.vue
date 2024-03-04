@@ -83,7 +83,12 @@ const driversSorted = computed(() => {
           <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2">
             Race Map
           </h3>
-          <RaceMap :circuit="session.circuitKey" />
+          <RaceMap
+            :circuit="session.circuitKey"
+            :trackStatus="trackStatus"
+            :windDirection="weather.wind_direction"
+            :position="null"
+          />
         </div>
 
         <div class="overflow-auto">
