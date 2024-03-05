@@ -14,11 +14,8 @@ const props = defineProps({
 });
 
 const space = 1000;
-
-const rad = (deg) => deg * (Math.PI / 180);
-const deg = (rad) => rad / (Math.PI / 180);
-
-const rotate = (x, y, a, px, py) => {
+const rad = (deg: number) => deg * (Math.PI / 180);
+const rotate = (x: number, y: number, a: number, px: number, py: number) => {
   const c = Math.cos(rad(a));
   const s = Math.sin(rad(a));
 
@@ -28,48 +25,50 @@ const rotate = (x, y, a, px, py) => {
   const newX = x * c - y * s;
   const newY = y * c + x * s;
 
-  return [newX + px, (newY + py) * -1];
+  return { y: newX + px, x: newY + py };
 };
+const rotationFIX = 90;
 
-const getTrackStatusColour = (status) => {
-  switch (status) {
-    case "2":
-    case "4":
-    case "6":
-    case "7":
-      return "yellow";
-    case "5":
-      return "red";
-    default:
-      return "var(--colour-fg)";
-  }
-};
-
-const sortDriverPosition = (Lines) => (a, b) => {
-  const [racingNumberA] = a;
-  const [racingNumberB] = b;
-
-  const driverA = Lines[racingNumberA];
-  const driverB = Lines[racingNumberB];
-
-  return Number(driverB?.Position) - Number(driverA?.Position);
-};
-
-const bearingToCardinal = (bearing) => {
-  const cardinalDirections = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
-  return cardinalDirections[Math.floor(bearing / 45) % 8];
-};
-
-const expanded = ref(false);
-const data = ref({} as any);
-const minX = ref();
-const minY = ref();
-const widthX = ref();
-const widthY = ref();
-const stroke = ref(0);
+// REF
 const points = ref<null | { x: number; y: number }[]>(null);
 const rotation = ref<number>(0);
 const ogPoints = ref<null | { x: number; y: number }[]>(null);
+const minX = ref<number | null>(null);
+const minY = ref<number | null>(null);
+const widthX = ref<number | null>(null);
+const widthY = ref<number | null>(null);
+const positions = computed(() =>
+  props.positionBatches
+    ? props.positionBatches.sort((a, b) =>
+        moment.utc(b.utc).diff(moment.utc(a.utc))
+      )[0].positions
+    : null
+);
+const xS = computed(() => ogPoints.value?.map((item) => item.x));
+const yS = computed(() => ogPoints.value?.map((item) => item.y));
+
+const rotatedPos = (pos: any) =>
+  computed(() =>
+    rotate(
+      pos.x,
+      pos.y,
+      rotation.value,
+      (Math.max(...xS.value!) - Math.min(...xS.value!)) / 2,
+      (Math.max(...yS.value!) - Math.min(...yS.value!)) / 2
+    )
+  );
+const out = (pos: any) =>
+  computed(
+    () =>
+      pos.status === "OUT" ||
+      pos.status === "RETIRED" ||
+      pos.status === "STOPPED"
+  );
+const transformTanslate = (pos: any) =>
+  [
+    `translateX(${rotatedPos(pos).value.x}px)`,
+    `translateY(${rotatedPos(pos).value.y}px)`,
+  ].join(" ");
 
 onMounted(async () => {
   try {
@@ -88,129 +87,95 @@ onMounted(async () => {
     if (apiResponse.status === 200) {
       const rawData = await apiResponse.json();
 
-      const px = (Math.max(...rawData.x) - Math.min(...rawData.x)) / 2;
-      const py = (Math.max(...rawData.y) - Math.min(...rawData.y)) / 2;
+      const centerX = (Math.max(...rawData.x) - Math.min(...rawData.x)) / 2;
+      const centerY = (Math.max(...rawData.y) - Math.min(...rawData.y)) / 2;
 
-      rawData.transformedPoints = rawData.x.map((x: number, i: number) =>
-        rotate(x, rawData.y[i], rawData.rotation, px, py)
+      const fixedRotation = rawData.rotation + rotationFIX;
+
+      const rotatedPoints = rawData.x.map((x: any, index: number) =>
+        rotate(x, rawData.y[index], fixedRotation, centerX, centerY)
       );
 
-      const cMinX =
-        Math.min(...rawData.transformedPoints.map(([x]: any) => x)) - space;
-      const cMinY =
-        Math.min(...rawData.transformedPoints.map(([, y]: any) => y)) - space;
-      const cWidthX =
-        Math.max(...rawData.transformedPoints.map(([x]: any) => x)) -
-        cMinX +
-        space * 2;
-      const cWidthY =
-        Math.max(...rawData.transformedPoints.map(([, y]: any) => y)) -
-        cMinY +
-        space * 2;
+      const pointsX = rotatedPoints.map((item: any) => item.x);
+      const pointsY = rotatedPoints.map((item: any) => item.y);
+
+      const cMinX = Math.min(...pointsX) - space;
+      const cMinY = Math.min(...pointsY) - space;
+      const cWidthX = Math.max(...pointsX) - cMinX + space * 2;
+      const cWidthY = Math.max(...pointsY) - cMinY + space * 2;
 
       minX.value = cMinX;
       minY.value = cMinY;
       widthX.value = cWidthX;
       widthY.value = cWidthY;
-
-      const cStroke = (cWidthX + cWidthY) / 225;
-      stroke.value = cStroke;
-
-      rawData.corners = rawData.corners.map((corner: any) => {
-        const transformedCorner = rotate(
-          corner.trackPosition.x,
-          corner.trackPosition.y,
-          rawData.rotation,
-          px,
-          py
-        );
-
-        const transformedLabel = rotate(
-          corner.trackPosition.x + 4 * cStroke * Math.cos(rad(corner.angle)),
-          corner.trackPosition.y + 4 * cStroke * Math.sin(rad(corner.angle)),
-          rawData.rotation,
-          px,
-          py
-        );
-
-        return { ...corner, transformedCorner, transformedLabel };
-      });
-
-      rawData.startAngle = deg(
-        Math.atan(
-          (rawData.transformedPoints[3][1] - rawData.transformedPoints[0][1]) /
-            (rawData.transformedPoints[3][0] - rawData.transformedPoints[0][0])
+      points.value = rotatedPoints;
+      rotation.value = fixedRotation;
+      ogPoints.value = rawData.x.map((xItem: number, index: number) => ({
+        x: xItem,
+        y: rawData.y[index],
+      }));
+      console.log("positions", positions);
+      console.log(
+        "pos",
+        props.positionBatches?.sort((a, b) =>
+          moment.utc(b.utc).diff(moment.utc(a.utc))
         )
       );
-
-      data.value = rawData;
     }
   } catch (e) {
     console.log("error", e);
   }
 });
-
-const xS = ogPoints.value?.map((item) => item.x);
-const yS = ogPoints.value?.map((item) => item.y);
-
-const rotatedPos = (pos: any) => rotate(
-  pos.x,
-  pos.y,
-  rotation,
-  (Math.max(...xS!) - Math.min(...xS!)) / 2,
-  (Math.max(...yS!) - Math.min(...yS!)) / 2,
-);
-
-const out = (pos: any) => pos.status === "OUT" || pos.status === "RETIRED" || pos.status === "STOPPED";
-
-const transform = [`translateX(${rotatedPos.x}px)`, `translateY(${rotatedPos.y}px)`].join(" ");
-
-
-const positions = computed(() => props.positionBatches ? props.positionBatches.sort((a, b) => moment.utc(b.utc).diff(moment.utc(a.utc)))[0].positions : null);
 </script>
 
 <template>
-    <svg
-			:viewBox="minX minY widthX widthY"
-			className="h-full w-full xl:max-h-screen"
-			xmlns="http://www.w3.org/2000/svg"
-		>
-			<path
-				className="stroke-slate-700"
-				strokeWidth={300}
-				strokeLinejoin="round"
-				fill="transparent"
-				:d="`M${points[0].x},${points[0].y} ${points.map((point) => `L${point.x},${point.y}`).join(" ")}`"
-			/>
-
-			<path
-				stroke="white"
-				strokeWidth={60}
-				strokeLinejoin="round"
-				fill="transparent"
-				:d="`M${points[0].x},${points[0].y} ${points.map((point) => `L${point.x},${point.y}`).join(" ")}`"
-			/>
-								<g
-									v-for="pos in positions!.sort(sortPos).reverse()"
-									:class="{ 'opacity-30': out(pos) }"
-                  class="fill-zinc-700"
-									:style="{
-                    transition: 'all 1s linear',
-										transform,
-										...(pos.teamColor && { fill: `#${pos.teamColor}` })
-                  }"
-								>
-									<circle :id="`map.driver.${pos.driverNr}.circle`" r={120} />
-									<text
-										:id="`map.driver.${pos.driverNr}.text`"
-										fontWeight="bold"
-										fontSize={120 * 3}
-										style={{
-											transform: "translateX(150px) translateY(-120px)",
-										}}
-									>
-										{pos.short}
-									</text>
-								</g>
-		</svg>
+  <div
+    v-if="!points || !minX || !minY || !widthX || !widthY"
+    class="flex h-full w-full items-center justify-center"
+  >
+    <div class="h-5/6 w-5/6 animate-pulse rounded-lg bg-gray-700" />
+  </div>
+  <svg
+    v-else
+    :viewBox="minX + ' ' + minY + ' ' + widthX + ' ' + widthY"
+    class="w-full"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      class="stroke-slate-700"
+      stroke-width="300"
+      stroke-linecap="round"
+      fill="transparent"
+      :d="'M' + points![0].x + ',' + points![0].y + ' ' + points?.map((point) => 'L' + point.x + ',' + point.y).join(' ')"
+    />
+    <path
+      stroke="white"
+      stroke-width="60"
+      stroke-linecap="round"
+      fill="transparent"
+      :d="'M' + points![0].x + ',' + points![0].y + ' ' + points!.map((point) => 'L' + point.x + ',' + point.y).join(' ')"
+    />
+    <g
+      v-for="pos in positions!.sort(sortPos).reverse()"
+      :class="{ 'opacity-30': out(pos) }"
+      class="fill-zinc-700"
+      :style="{
+        transition: 'all 1s linear',
+        transform: transformTanslate(pos),
+        ...(pos.teamColor && { fill: '#' + pos.teamColor }),
+      }"
+    >
+      <circle :id="`map.driver.${pos.driverNr}.circle`" r="120" />
+      <text
+        :id="`map.driver.${pos.driverNr}.text`"
+        font-weight="bold"
+        :font-size="120 * 3"
+        :style="{
+          transform: 'translateX(150px) translateY(-120px)',
+        }"
+      >
+        {{ pos.short }}
+      </text>
+    </g>
+  </svg>
 </template>

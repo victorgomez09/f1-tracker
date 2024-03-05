@@ -8,6 +8,7 @@ import RaceMap from "../components/race-map/RaceMap.vue";
 
 import { dashboardData } from "../store/data.store";
 import { sortPos } from "../utils/position.utils";
+import RaceRadio from "../components/race-radios/RaceRadio.vue";
 
 const data = isProxy(dashboardData)
   ? toRaw(dashboardData.data)
@@ -19,6 +20,8 @@ const { weather } = data;
 const { extrapolatedClock } = data;
 const { drivers } = data;
 const { raceControlMessages } = data;
+const { positionBatches } = data;
+const { teamRadios } = data;
 
 const driversSorted = computed(() => {
   return drivers.sort(sortPos);
@@ -87,7 +90,7 @@ const driversSorted = computed(() => {
             :circuit="session.circuitKey"
             :trackStatus="trackStatus"
             :windDirection="weather.wind_direction"
-            :position="null"
+            :position-batches="positionBatches"
           />
         </div>
 
@@ -95,6 +98,7 @@ const driversSorted = computed(() => {
           <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2">
             Race Radios
           </h3>
+          <RaceRadio :team-radios="teamRadios" />
         </div>
       </div>
     </div>
