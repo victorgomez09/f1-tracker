@@ -25,9 +25,9 @@ const initWebsocket = (handleMessage: any) => {
   //   (window.location.port ? `:${window.location.port}` : "") +
   //   "/ws";
 
-  const wsUrl =
-    "wss://jubilant-chainsaw-x9qj59gwj56fvgwg-3001.app.github.dev/";
-  // const wsUrl = "ws://localhost:3001";
+  //const wsUrl =
+  //  "wss://jubilant-chainsaw-x9qj59gwj56fvgwg-3001.app.github.dev/";
+  const wsUrl = "ws://localhost:3001";
 
   const ws = new WebSocket(wsUrl);
 

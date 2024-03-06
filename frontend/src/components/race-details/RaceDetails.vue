@@ -15,7 +15,7 @@ const props = defineProps({
   extrapolatedClock: Object as PropType<F1ExtrapolatedClock>,
   trackStatus: Object as PropType<F1TrackStatus>,
   weather: Object as PropType<F1WeatherData>,
-  laps: Object as PropType<F1Laps>
+  laps: Object as PropType<F1Laps>,
 });
 
 const countryFlag = ref();
@@ -54,21 +54,32 @@ const windDirection = computed(() => {
 <template>
   <div class="w-full">
     <div class="flex items-center self-start gap-2 p-2">
-      <img class="relative overflow-hidden rounded h-6 w-12" :src="countryFlag" alt="Country flag" />
+      <img
+        class="relative overflow-hidden rounded h-6 w-12"
+        :src="countryFlag"
+        alt="Country flag"
+      />
 
-      <div class="flex items-center gap-6">
+      <div class="flex items-center gap-6 w-full">
         <p>
           <span class="font-semibold">{{ props.session?.officialName }}</span>
-          , {{ session?.location }}, {{session?.countryName }}
+          , {{ session?.location }}, {{ session?.countryName }}
         </p>
 
         <p><span class="font-semibold">Session:</span> {{ session?.type }}</p>
-        <p v-if="!laps"><span class="font-semibold">Remaining:</span> {{ timeRemaining }}</p>
-        <p v-else><span class="font-semibold">Laps:</span> {{ laps.current }} / {{ laps.total }}</p>
+        <p v-if="!laps">
+          <span class="font-semibold">Remaining:</span> {{ timeRemaining }}
+        </p>
+        <p v-else>
+          <span class="font-semibold">Laps:</span> {{ laps.current }} /
+          {{ laps.total }}
+        </p>
 
         <!-- <span class="badge badge-lg" :class="trackStatusInfo?.color">
           {{ trackStatusInfo?.message }}
         </span> -->
+
+        <div class="self-end">Settings</div>
       </div>
     </div>
 
@@ -77,16 +88,19 @@ const windDirection = computed(() => {
     <div class="flex items-center gap-4 p-2 text-sm">
       <h2 class="font-semibold">WEATHER</h2>
 
-      <p>
-        Wind speed: {{ props.weather?.wind_speed }} km/h
-      </p>
+      <p>Wind speed: {{ props.weather?.wind_speed }} km/h</p>
 
       <p class="flex items-center">
         Wind dir: {{ windDirection }}
-        <img class="text-base-content" src="../../assets/icons/arrow-up.svg" alt="arrow" :style="[
-                    { rotate: `${props.weather?.wind_direction}deg` },
-                    { transition: '1s linear' },
-                  ]" />
+        <img
+          class="text-base-content"
+          src="../../assets/icons/arrow-up.svg"
+          alt="arrow"
+          :style="[
+            { rotate: `${props.weather?.wind_direction}deg` },
+            { transition: '1s linear' },
+          ]"
+        />
       </p>
 
       <p>Air temp: {{ props.weather?.air_temp }}ºC</p>

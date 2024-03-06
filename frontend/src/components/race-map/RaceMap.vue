@@ -138,11 +138,11 @@ onMounted(async () => {
   <svg
     v-else
     :viewBox="minX + ' ' + minY + ' ' + widthX + ' ' + widthY"
-    class="w-full"
+    class="w-full h-full"
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
-      class="stroke-slate-700"
+      class="bg-secondary"
       stroke-width="300"
       stroke-linecap="round"
       fill="transparent"

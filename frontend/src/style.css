@@ -9,6 +9,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 #app {
