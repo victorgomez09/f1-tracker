@@ -1,4 +1,4 @@
 export type F1Laps = {
-  currentLap: number;
-  totalLaps: number;
+  current: number;
+  total: number;
 };

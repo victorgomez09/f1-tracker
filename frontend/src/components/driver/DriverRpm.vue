@@ -45,7 +45,7 @@ const rpmGauge = computed(() => (props.rpm! / 15000) * 100);
     </div>
 
     <progress
-      class="progress progress-secondary"
+      class="progress progress-primary w-16"
       :value="rpmGauge"
       max="100"
     ></progress>

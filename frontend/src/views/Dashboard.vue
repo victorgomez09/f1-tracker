@@ -22,6 +22,7 @@ const { drivers } = data;
 const { raceControlMessages } = data;
 const { positionBatches } = data;
 const { teamRadios } = data;
+const { lapCount } = data;
 
 const driversSorted = computed(() => {
   return drivers.sort(sortPos);
@@ -29,39 +30,16 @@ const driversSorted = computed(() => {
 </script>
 
 <template>
-  <!-- <div class="flex flex-col flex-1 bg-base-300 min-h-screen">
-    
-
-    <div class="relative flex flex-grow">
-      <main class="flex flex-1 overflow-scroll">
-        <div class="grid grid-cols-3 w-full h-full">
-          <div class="col-span-2 overflow-scroll h-dvh w-dvw">
-            <h3 class="font-bold text-lg bg-base-100 p-2">Live Timming</h3>
-            <Driver
-              v-for="driver in driversSorted"
-              :driver="driver"
-              :position="driver.position"
-            />
-          </div>
-
-          <div class="w-full overflow-auto">
-            <h3 class="font-bold text-lg bg-base-100 p-2">Race Control</h3>
-            <RaceControl :messages="raceControlMessages" />
-          </div>
-        </div>
-      </main>
-    </div>
-  </div> -->
-
   <div class="flex flex-col flex-1 bg-base-300">
     <RaceDetails
       :session="session"
       :trackStatus="trackStatus"
       :weather="weather"
       :extrapolatedClock="extrapolatedClock"
+      :laps="lapCount"
     />
 
-    <div class="overflow-auto">
+    <div class="grid overflow-auto">
       <div class="col-span-2 overflow-auto">
         <h3 class="font-bold text-lg bg-base-100 p-2">Live Timming</h3>
         <Driver
@@ -95,7 +73,7 @@ const driversSorted = computed(() => {
         </div>
 
         <div class="overflow-auto">
-          <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2">
+          <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2 z-[1]">
             Race Radios
           </h3>
           <RaceRadio :team-radios="teamRadios" />

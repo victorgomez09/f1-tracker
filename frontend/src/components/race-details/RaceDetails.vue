@@ -8,12 +8,14 @@ import { getTrackStatusMessage } from "../../utils/track.util";
 import { F1TrackStatus } from "../../models/track-status.model";
 import { F1WeatherData } from "../../models/weather";
 import { getWindDirection } from "../../utils/wind.util";
+import { F1Laps } from "../../models/laps.model";
 
 const props = defineProps({
   session: Object as PropType<F1Session>,
   extrapolatedClock: Object as PropType<F1ExtrapolatedClock>,
   trackStatus: Object as PropType<F1TrackStatus>,
   weather: Object as PropType<F1WeatherData>,
+  laps: Object as PropType<F1Laps>
 });
 
 const countryFlag = ref();
@@ -50,94 +52,77 @@ const windDirection = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-2 border-b border-b-primary p-4">
+  <div class="flex flex-wrap items-center gap-2 border-b border-b-primary p-4 w-full">
     <div class="flex flex-col gap-2">
-      <div class="flex items-center gap-2">
-        <div class="flex items-center gap-2">
-          <img
-            class="relative overflow-hidden rounded h-12 w-16"
-            :src="countryFlag"
-            alt="Country flag"
-          />
+      <div class="flex flex-wrap items-center gap-2">
+        <img class="relative overflow-hidden rounded h-12 w-16" :src="countryFlag" alt="Country flag" />
+
+        <div class="flex flex-col">
+          <span class="font-semibold">{{ props.session?.name }}: {{ props.session?.type }}</span>
+          <div class="flex items-center gap-2">
+            <span class="text-3xl font-bold" v-if="!laps">{{ timeRemaining }}</span>
+            <span class="text-3xl font-bold" v-if="laps">
+              {{ laps.current }} / {{ laps.total }}
+            </span>
+
+            <span class="badge badge-lg" :class="trackStatusInfo?.color">{{
+              trackStatusInfo?.message
+              }}</span>
+          </div>
+        </div>
+
+        <div class="flex gap-4 lg:ml-4">
+          <div class="flex flex-col">
+            <span class="font-semibold">Wind speed</span>
+            <span class="text-xl font-bold">
+              {{ props.weather?.wind_speed }} km/h
+            </span>
+          </div>
 
           <div class="flex flex-col">
-            <span class="font-semibold"
-              >{{ props.session?.name }}: {{ props.session?.type }}</span
-            >
-            <div class="flex items-center gap-2">
-              <span class="text-3xl font-bold">{{ timeRemaining }}</span>
-
-              <span class="badge badge-lg" :class="trackStatusInfo?.color">{{
-                trackStatusInfo?.message
-              }}</span>
-            </div>
-          </div>
-
-          <div class="flex gap-4">
-            <div class="flex flex-col">
-              <span class="font-semibold">Wind speed</span>
-              <span class="text-xl font-bold">
-                {{ props.weather?.wind_speed }} km/h
-              </span>
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Wind direction</span>
-              <span class="flex items-center text-xl font-bold">
-                {{ windDirection }}
-                <img
-                  src="../../assets/icons/arrow-up.svg"
-                  alt="arrow"
-                  :style="[
+            <span class="font-semibold">Wind dir</span>
+            <span class="flex items-center text-xl font-bold">
+              {{ windDirection }}
+              <img class="text-base-content" src="../../assets/icons/arrow-up.svg" alt="arrow" :style="[
                     { rotate: `${props.weather?.wind_direction}deg` },
                     { transition: '1s linear' },
-                  ]"
-                />
-              </span>
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Air temp</span>
-              <span class="text-xl font-bold"
-                >{{ props.weather?.air_temp }}ºC</span
-              >
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Track temp</span>
-              <span class="text-xl font-bold"
-                >{{ props.weather?.track_temp }}ºC</span
-              >
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Wind</span>
-              <span class="text-xl font-bold"
-                >{{ props.weather?.track_temp }}ºC</span
-              >
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Humidity</span>
-              <span class="text-xl font-bold"
-                >{{ props.weather?.humidity }}%</span
-              >
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Pressure</span>
-              <span class="text-xl font-bold"
-                >{{ props.weather?.pressure }} mb</span
-              >
-            </div>
-
-            <div class="flex flex-col">
-              <span class="font-semibold">Rainfall</span>
-              <span class="text-xl font-bold"
-                >{{ props.weather?.rainfall }}%</span
-              >
-            </div>
+                  ]" />
+            </span>
           </div>
+
+          <div class="flex flex-col">
+            <span class="font-semibold">Air temp</span>
+            <span class="text-xl font-bold">{{ props.weather?.air_temp }}ºC</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-semibold">Track temp</span>
+            <span class="text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-semibold">Wind</span>
+            <span class="text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-semibold">Humidity</span>
+            <span class="text-xl font-bold">{{ props.weather?.humidity }}%</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-semibold">Pressure</span>
+            <span class="text-xl font-bold">{{ props.weather?.pressure }} mb</span>
+          </div>
+
+          <div class="flex flex-col">
+            <span class="font-semibold">Rainfall</span>
+            <span class="text-xl font-bold">{{ props.weather?.rainfall }}%</span>
+          </div>
+        </div>
+
+        <div class="flex gap-4 ml-auto lg:ml-4">
+          
         </div>
       </div>
     </div>

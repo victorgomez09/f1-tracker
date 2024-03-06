@@ -21,7 +21,7 @@ const props = defineProps({
   <div
     class="grid place-items-center items-center gap-1 py-1"
     :style="{
-      gridTemplateColumns: '1.5fr 1fr 1fr 1fr 2fr 2fr 3fr 1.5fr',
+      gridTemplateColumns: '1.5fr 0.5fr 1.5fr 1fr 2fr 2fr 3fr 1.5fr',
     }"
     :class="[
       {

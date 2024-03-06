@@ -16,7 +16,7 @@ const props = defineProps({
       <div class="flex h-[10px] flex-row gap-1">
         <div
           v-for="status in sector.segments"
-          class="h-[10px] w-2 rounded-[0.2rem]"
+          class="badge badge-primary badge-xs"
           :class="[
             { 'bg-warning': status === 2048 || status === 2052 }, // TODO unsure
             { 'bg-success': status === 2049 },
@@ -45,4 +45,3 @@ const props = defineProps({
     </div>
   </div>
 </template>
-../../models/driver.model../../utils/time.util
