@@ -52,36 +52,88 @@ const windDirection = computed(() => {
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center gap-2 border-b border-b-primary p-4 w-full">
+  <div class="w-full">
+    <div class="flex items-center self-start gap-2 p-2">
+      <img class="relative overflow-hidden rounded h-6 w-12" :src="countryFlag" alt="Country flag" />
+
+      <div class="flex items-center gap-6">
+        <p>
+          <span class="font-semibold">{{ props.session?.officialName }}</span>
+          , {{ session?.location }}, {{session?.countryName }}
+        </p>
+
+        <p><span class="font-semibold">Session:</span> {{ session?.type }}</p>
+        <p v-if="!laps"><span class="font-semibold">Remaining:</span> {{ timeRemaining }}</p>
+        <p v-else><span class="font-semibold">Laps:</span> {{ laps.current }} / {{ laps.total }}</p>
+
+        <!-- <span class="badge badge-lg" :class="trackStatusInfo?.color">
+          {{ trackStatusInfo?.message }}
+        </span> -->
+      </div>
+    </div>
+
+    <div class="divider m-0 h-0"></div>
+
+    <div class="flex items-center gap-4 p-2 text-sm">
+      <h2 class="font-semibold">WEATHER</h2>
+
+      <p>
+        Wind speed: {{ props.weather?.wind_speed }} km/h
+      </p>
+
+      <p class="flex items-center">
+        Wind dir: {{ windDirection }}
+        <img class="text-base-content" src="../../assets/icons/arrow-up.svg" alt="arrow" :style="[
+                    { rotate: `${props.weather?.wind_direction}deg` },
+                    { transition: '1s linear' },
+                  ]" />
+      </p>
+
+      <p>Air temp: {{ props.weather?.air_temp }}ºC</p>
+      <p>Track temp: {{ props.weather?.track_temp }}ºC</p>
+      <p>Wind: {{ props.weather?.track_temp }}ºC</p>
+      <p>Humidity: {{ props.weather?.humidity }}%</p>
+      <p>Pressure: {{ props.weather?.pressure }} mb</p>
+      <p>Rainfall: {{ props.weather?.rainfall }}%</p>
+    </div>
+
+    <div class="divider m-0 h-0"></div>
+  </div>
+
+  <!-- <div class="flex items-center gap-2 border-b border-b-primary p-4 w-full">
     <div class="flex flex-col gap-2">
-      <div class="flex flex-wrap items-center gap-2">
-        <img class="relative overflow-hidden rounded h-12 w-16" :src="countryFlag" alt="Country flag" />
-
-        <div class="flex flex-col">
-          <span class="font-semibold">{{ props.session?.name }}: {{ props.session?.type }}</span>
-          <div class="flex items-center gap-2">
-            <span class="text-3xl font-bold" v-if="!laps">{{ timeRemaining }}</span>
-            <span class="text-3xl font-bold" v-if="laps">
-              {{ laps.current }} / {{ laps.total }}
-            </span>
-
-            <span class="badge badge-lg" :class="trackStatusInfo?.color">{{
-              trackStatusInfo?.message
-              }}</span>
+      <div class="flex flex-col md:flex-row items-center gap-2">
+        <div class="flex items-center self-start gap-2">
+          <img class="relative overflow-hidden rounded h-8 lg:h-12 w-12 lg:w-16" :src="countryFlag" alt="Country flag" />
+  
+          <div class="flex flex-col">
+            <span class="font-semibold">{{ props.session?.name }}: {{ props.session?.type }}</span>
+            <div class="flex items-center gap-2">
+              <span class="lg:text-3xl font-bold" v-if="!laps">{{ timeRemaining }}</span>
+              <span class="lg:text-3xl font-bold" v-if="laps">
+                {{ laps.current }} / {{ laps.total }}
+              </span>
+  
+              <span class="badge badge-lg" :class="trackStatusInfo?.color">{{
+                trackStatusInfo?.message
+                }}</span>
+            </div>
           </div>
         </div>
 
-        <div class="flex gap-4 lg:ml-4">
+        <div class="divider lg:hidden"></div>
+
+        <div class="flex items-center gap-4 lg:ml-4">
           <div class="flex flex-col">
             <span class="font-semibold">Wind speed</span>
-            <span class="text-xl font-bold">
+            <span class="lg:text-xl font-bold">
               {{ props.weather?.wind_speed }} km/h
             </span>
           </div>
 
           <div class="flex flex-col">
             <span class="font-semibold">Wind dir</span>
-            <span class="flex items-center text-xl font-bold">
+            <span class="flex items-center lg:text-xl font-bold">
               {{ windDirection }}
               <img class="text-base-content" src="../../assets/icons/arrow-up.svg" alt="arrow" :style="[
                     { rotate: `${props.weather?.wind_direction}deg` },
@@ -92,39 +144,35 @@ const windDirection = computed(() => {
 
           <div class="flex flex-col">
             <span class="font-semibold">Air temp</span>
-            <span class="text-xl font-bold">{{ props.weather?.air_temp }}ºC</span>
+            <span class="lg:text-xl font-bold">{{ props.weather?.air_temp }}ºC</span>
           </div>
 
           <div class="flex flex-col">
             <span class="font-semibold">Track temp</span>
-            <span class="text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
+            <span class="lg:text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
           </div>
 
           <div class="flex flex-col">
             <span class="font-semibold">Wind</span>
-            <span class="text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
+            <span class="lg:text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
           </div>
 
           <div class="flex flex-col">
             <span class="font-semibold">Humidity</span>
-            <span class="text-xl font-bold">{{ props.weather?.humidity }}%</span>
+            <span class="lg:text-xl font-bold">{{ props.weather?.humidity }}%</span>
           </div>
 
           <div class="flex flex-col">
             <span class="font-semibold">Pressure</span>
-            <span class="text-xl font-bold">{{ props.weather?.pressure }} mb</span>
+            <span class="lg:text-xl font-bold">{{ props.weather?.pressure }} mb</span>
           </div>
 
           <div class="flex flex-col">
             <span class="font-semibold">Rainfall</span>
-            <span class="text-xl font-bold">{{ props.weather?.rainfall }}%</span>
+            <span class="lg:text-xl font-bold">{{ props.weather?.rainfall }}%</span>
           </div>
-        </div>
-
-        <div class="flex gap-4 ml-auto lg:ml-4">
-          
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 </template>

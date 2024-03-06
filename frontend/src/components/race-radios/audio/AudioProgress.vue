@@ -12,13 +12,13 @@ const totalDuration = computed(() => (Math.round((props.duration! + Number.EPSIL
 </script>
 
 <template>
-    <div class="flex flex-col items-center w-20">
+    <div class="flex flex-col items-center min-w-[10em]">
         <progress
             class="progress progress-primary z-0"
             :value="percent"
             max="100"
             ></progress>
 
-        <span class="">{{ currentDuration }} - {{ totalDuration }}</span>
+        <span class="flex items-center">{{ currentDuration }} - {{ totalDuration }} secs</span>
     </div>
 </template>

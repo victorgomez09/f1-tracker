@@ -31,52 +31,44 @@ const driversSorted = computed(() => {
 
 <template>
   <div class="flex flex-col flex-1 bg-base-300">
-    <RaceDetails
-      :session="session"
-      :trackStatus="trackStatus"
-      :weather="weather"
-      :extrapolatedClock="extrapolatedClock"
-      :laps="lapCount"
-    />
+    <RaceDetails :session="session" :trackStatus="trackStatus" :weather="weather" :extrapolatedClock="extrapolatedClock"
+      :laps="lapCount" />
 
     <div class="grid overflow-auto">
+      <h3 class="font-bold text-lg bg-base-100 p-2 w-full">Live Timming</h3>
       <div class="col-span-2 overflow-auto">
-        <h3 class="font-bold text-lg bg-base-100 p-2">Live Timming</h3>
-        <Driver
-          v-for="driver in driversSorted"
-          :driver="driver"
-          :position="driver.position"
-        />
+        <Driver v-for="driver in driversSorted" :driver="driver" :position="driver.position" />
       </div>
 
-      <div
-        class="grid grid-rows-1 grid-cols-6 overflow-auto"
-        :style="{ maxHeight: '81vh' }"
-      >
-        <div class="col-span-2 overflow-auto">
+      <div class="grid grid-rows-1 grid-cols-6 overflow-auto" :style="{ maxHeight: '81vh' }">
+        <div class="flex flex-col col-span-2">
           <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2">
             Race Control
           </h3>
-          <RaceControl :messages="raceControlMessages" />
-        </div>
+          <div class="overflow-auto h-full">
+              <RaceControl :messages="raceControlMessages" />
+          </div>
+          </div>
 
-        <div class="col-span-3 overflow-auto">
-          <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2">
-            Race Map
-          </h3>
-          <RaceMap
-            :circuit="session.circuitKey"
-            :trackStatus="trackStatus"
-            :windDirection="weather.wind_direction"
-            :position-batches="positionBatches"
-          />
-        </div>
+        <div class="flex flex-col col-span-3">
+            <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2">
+              Race Map
+            </h3>
 
-        <div class="overflow-auto">
+            <div class="overflow-auto h-full">
+              <RaceMap :circuit="session.circuitKey" :trackStatus="trackStatus" :windDirection="weather.wind_direction"
+                :position-batches="positionBatches" />
+            </div>
+          </div>
+
+        <div class="flex flex-col ">
           <h3 class="sticky top-0 font-bold text-lg bg-base-100 bg-fixed p-2 z-[1]">
             Race Radios
           </h3>
-          <RaceRadio :team-radios="teamRadios" />
+
+          <div class="overflow-auto h-full">
+            <RaceRadio :team-radios="teamRadios" />
+          </div>
         </div>
       </div>
     </div>
