@@ -1,3 +1,5 @@
+import { F1CarData } from "./f1.model";
+
 export type State = {
   extrapolatedClock?: ExtrapolatedClock;
   sessionData?: SessionData;
@@ -8,6 +10,7 @@ export type State = {
   raceControlMessages?: RaceControlMessage[];
   teamRadios?: TeamRadio[];
   drivers?: Driver[];
+  carData?: F1CarData;
 
   session?: SessionInfo;
 

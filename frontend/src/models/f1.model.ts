@@ -1,3 +1,4 @@
+import { F1CarData } from "./car.model";
 import { F1ExtrapolatedClock } from "./clock.model";
 import { F1Driver } from "./driver.model";
 import { F1Laps } from "./laps.model";
@@ -18,4 +19,5 @@ export type F1 = {
   positionBatches: DriverPositionBatch[];
   teamRadios: TeamRadioType[];
   lapCount: F1Laps;
+  carData: F1CarData;
 };

@@ -9,8 +9,6 @@ export const subscribeRequest = (): string => {
         "CarData.z",
         "Position.z",
         "ExtrapolatedClock",
-        "TopThree",
-        // "RcmSeries", // still used?
         "TimingStats",
         "TimingAppData",
         "WeatherData",

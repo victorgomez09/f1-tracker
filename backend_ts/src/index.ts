@@ -20,7 +20,6 @@ server.listen(serverPort, async () => {
       ws.send(data);
     });
 
-    console.log(f1_ws);
     if (!f1_ws) {
       await setupF1(ws);
     } else {

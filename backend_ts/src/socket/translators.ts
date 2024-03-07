@@ -337,6 +337,9 @@ export const translateDrivers = (
 
 export const translate = (state: F1State): State => {
   return {
+    ...(state.CarData && {
+      carData: state.CarData,
+    }),
     ...(state.ExtrapolatedClock && {
       extrapolatedClock: translateExtrapolatedClock(state.ExtrapolatedClock),
     }),

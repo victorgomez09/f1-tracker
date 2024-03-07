@@ -21,6 +21,7 @@ export type ParsedRecap = {
   Position?: F1Position;
 };
 
+// export type F1State = ParsedRecap & Omit<F1Recap, "CarData.z" | "Position.z">;
 export type F1State = ParsedRecap & Omit<F1Recap, "CarData.z" | "Position.z">;
 
 export type F1Recap = {
