@@ -25,15 +25,12 @@ export const updateState = (state: F1State, data: SocketData): F1State => {
       let parsedMsg: null | F1CarData | F1Position = null;
       let parsedCat: null | string = null;
 
-      console.log("cat", cat);
       if (
         (cat === "CarData.z" || cat === "Position.z") &&
         typeof msg === "string"
       ) {
-        console.log("parse cardata");
         parsedCat = cat.split(".")[0];
         parsedMsg = parseCompressed<F1CarData | F1Position>(msg);
-        console.log(parsedMsg);
       }
 
       state = merge(state, { [parsedCat ?? cat]: parsedMsg ?? msg }) ?? state;

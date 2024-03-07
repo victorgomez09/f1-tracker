@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, withScopeId } from "vue";
 import { dashboardData } from "./store/data.store";
 
 const socket = ref();
@@ -53,26 +53,61 @@ const initWebsocket = (handleMessage: any) => {
   ws.addEventListener("message", ({ data }) => {
     setTimeout(() => {
       handleMessage(data);
+      console.log("message", data);
     }, delayMs.value);
   });
 
   socket.value = ws;
 };
 
-onMounted(() =>
-  initWebsocket((data: any) => {
-    try {
-      const d = JSON.parse(data);
-      console.log(d);
-      liveState.value = d;
-      updated.value = new Date();
-      dashboardData.data = d;
-      dataUpdated.value = true;
-    } catch (e) {
-      console.error(`could not process message: ${e}`);
-    }
-  })
-);
+onMounted(() => {
+  // setInterval(() => {
+  //   initWebsocket((data: any) => {
+  //     try {
+  //       const d = JSON.parse(data);
+  //       liveState.value = d;
+  //       updated.value = new Date();
+  //       dashboardData.data = d;
+  //       dataUpdated.value = true;
+  //     } catch (e) {
+  //       console.error(`could not process message: ${e}`);
+  //     }
+  //   });
+  // }, 100)
+  const ws = new WebSocket(
+    "wss://3001-victorgomez09-f1tracker-zuw71jj3ixf.ws-eu108.gitpod.io"
+  );
+
+  // ws.addEventListener("open", () => {
+  //   connected.value = true;
+  // });
+
+  // ws.addEventListener("close", () => {
+  //   connected.value = false;
+  //   blocking.value = true;
+  //   () => {
+  //     if (!retry.value && !blocking.value)
+  //       retry.value = window.setTimeout(() => {
+  //         // initWebsocket(handleMessage);
+  //       }, 1000);
+  //   };
+  // });
+
+  // ws.addEventListener("error", () => {
+  //   ws.close();
+  // });
+
+  // ws.addEventListener("message", ({ data }) => {
+  //   setTimeout(() => {
+  //     // handleMessage(data);
+  //     console.log("message", data);
+  //   }, delayMs.value);
+  // });
+
+  ws.onmessage = (data) => {
+    console.log("onmessage", data);
+  };
+});
 </script>
 
 <template>

@@ -39,6 +39,7 @@ export const setupF1 = async (wss: WebSocket) => {
 
     state = updateState(state, data);
     wss.emit("f1-socket", JSON.stringify(translate(state)));
+    console.log("message sended");
   };
 
   f1_ws.onopen = () => f1_ws?.send(subscribeRequest());

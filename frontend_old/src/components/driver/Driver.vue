@@ -119,11 +119,11 @@ const drs = computed(() => car.value![45]);
       </span>
 
       <span
-        class="flex items-center justify-end text-nowrap"
+        class="flex flex-col items-end text-nowrap text-end"
         :style="{ color: '#' + driver?.teamColor! }"
       >
         {{ driver?.nr }} {{ driver?.short }}
-        <br />
+
         <span>
           {{
             driver?.status === "OUT"
@@ -193,7 +193,7 @@ const drs = computed(() => car.value![45]);
         </span>
       </span>
 
-      <span>
+      <span class="flex flex-col items-end">
         <span
           :title="
             'Gap to car ahead ' + driver?.catchingFront ? ' (catching)' : ''
@@ -207,6 +207,10 @@ const drs = computed(() => car.value![45]);
           >
             {{ driver?.gapToFront || "-" }}
           </span>
+        </span>
+
+        <span title="Gap to leader">
+          Ldr{{ " " }} {{ driver?.gapToLeader || "-" }}
         </span>
       </span>
     </div>
