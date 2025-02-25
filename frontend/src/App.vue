@@ -106,13 +106,24 @@ onMounted(() => {
   // });
 
   ws.onmessage = (data) => {
-    console.log("onmessage", data);
+    console.log("onmessage", data.data);
+    try {
+      const d = JSON.parse(data.data);
+      console.log("d", d);
+      liveState.value = d;
+      updated.value = new Date();
+      dashboardData.data = d;
+      dataUpdated.value = true;
+    } catch (e) {
+      console.error(`could not process message: ${e}`);
+    }
   };
 });
 </script>
 
 <template>
   <div class="flex flex-1 h-full w-full">
-    <router-view v-if="connected && dataUpdated"></router-view>
+    <!--<router-view v-if="connected && dataUpdated"></router-view>-->
+    <router-view></router-view>
   </div>
 </template>

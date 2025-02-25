@@ -80,6 +80,14 @@ const windDirection = computed(() => {
         </span> -->
 
         <div class="flex items-center gap-2 ml-auto">
+          {{ trackStatusInfo }}
+          <div
+            class="size-2 rounded"
+            :class="{ 'bg-sucess': trackStatusInfo?.message === 'Track Clear' }"
+          ></div>
+        </div>
+
+        <!-- <div class="flex items-center gap-2 ml-auto">
           <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn m-1">
               Theme
@@ -146,7 +154,7 @@ const windDirection = computed(() => {
               </li>
             </ul>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
