@@ -26,7 +26,7 @@ const initWebsocket = (handleMessage: any) => {
   //   "/ws";
 
   const wsUrl =
-    "wss://3001-victorgomez09-f1tracker-zuw71jj3ixf.ws-eu108.gitpod.io";
+    "wss://3000-victorgomez09-f1tracker-a7zkp3fi4k8.ws-eu118.gitpod.io/wss";
   // const wsUrl = "ws://localhost:3001";
 
   const ws = new WebSocket(wsUrl);
@@ -75,12 +75,13 @@ onMounted(() => {
   //   });
   // }, 100)
   const ws = new WebSocket(
-    "wss://3001-victorgomez09-f1tracker-zuw71jj3ixf.ws-eu108.gitpod.io"
+    "wss://3000-victorgomez09-f1tracker-a7zkp3fi4k8.ws-eu118.gitpod.io/ws"
   );
 
-  // ws.addEventListener("open", () => {
-  //   connected.value = true;
-  // });
+  ws.addEventListener("open", () => {
+    console.log("open");
+    connected.value = true;
+  });
 
   // ws.addEventListener("close", () => {
   //   connected.value = false;

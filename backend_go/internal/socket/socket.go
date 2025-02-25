@@ -28,7 +28,7 @@ type NegotiationResponse struct {
 
 var state model.F1State
 
-func InitStream() {
+func InitStream(ws *websocket.Conn) {
 	log.Println(utils.SignalrUrl, " Connecting to live timing stream")
 
 	urlParsed, err := url.Parse("https://" + utils.SignalrUrl + "/negotiate")
@@ -105,6 +105,9 @@ func InitStream() {
 			// fmt.Println("onbject", *object)
 
 			// UpdateState(state, *object)
+			if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
+				fmt.Println("write error:", err)
+			}
 		}
 
 		fmt.Println("subscribed")
