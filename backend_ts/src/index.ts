@@ -5,7 +5,7 @@ import { f1_ws, setupF1, state } from "./socket/init";
 import { translate } from "./socket/translators";
 
 const server = express();
-const serverPort = process.env.SERVER_PORT || 3000;
+const serverPort = process.env.SERVER_PORT || 3002;
 const wsPort = process.env.WS_PORT || 3001;
 
 server.listen(serverPort, async () => {
@@ -14,6 +14,7 @@ server.listen(serverPort, async () => {
   const ws = new WebSocketServer({ port: Number(wsPort) });
   console.log(`Running ws on port. ${Number(wsPort)}`);
 
+  await setupF1();
   ws.on("connection", async (ws: WebSocket) => {
     console.log("client connected");
     ws.on("f1-socket", (data) => {

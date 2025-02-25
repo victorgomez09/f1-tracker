@@ -16,6 +16,7 @@ const parseCompressed = <T>(data: string): T => {
 };
 
 export const updateState = (state: F1State, data: SocketData): F1State => {
+  console.log("data.M", data.M);
   if (data.M) {
     for (const message of data.M) {
       if (message.M !== "feed") continue;
