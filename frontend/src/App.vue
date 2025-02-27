@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref, withScopeId } from "vue";
 import { dashboardData } from "./store/data.store";
+import { ServerResponse } from "./models/server.model";
+import { parseData } from "./utils/parse-data.utils";
 
 const socket = ref();
 const retry = ref();
@@ -26,7 +28,7 @@ const initWebsocket = (handleMessage: any) => {
   //   "/ws";
 
   const wsUrl =
-    "wss://3000-victorgomez09-f1tracker-a7zkp3fi4k8.ws-eu118.gitpod.io/wss";
+    "wss://victorgomez09-f1tracker-rkauu33dlup.ws-eu118.gitpod.io/wss";
   // const wsUrl = "ws://localhost:3001";
 
   const ws = new WebSocket(wsUrl);
@@ -75,7 +77,7 @@ onMounted(() => {
   //   });
   // }, 100)
   const ws = new WebSocket(
-    "wss://3000-victorgomez09-f1tracker-a7zkp3fi4k8.ws-eu118.gitpod.io/ws"
+    "wss://3000-victorgomez09-f1tracker-rkauu33dlup.ws-eu118.gitpod.io/ws"
   );
 
   ws.addEventListener("open", () => {
@@ -106,13 +108,14 @@ onMounted(() => {
   // });
 
   ws.onmessage = (data) => {
-    console.log("onmessage", data.data);
     try {
-      const d = JSON.parse(data.data);
-      console.log("d", d);
-      liveState.value = d;
-      updated.value = new Date();
-      dashboardData.data = d;
+      // const d: ServerResponse = JSON.parse(data.data);
+      // console.log("d", d);
+      // console.log("onmessage", data.data);
+      parseData(JSON.parse(data.data));
+      // liveState.value = d;
+      // updated.value = new Date();
+      // dashboardData.value = d;
       dataUpdated.value = true;
     } catch (e) {
       console.error(`could not process message: ${e}`);
@@ -124,6 +127,6 @@ onMounted(() => {
 <template>
   <div class="flex flex-1 h-full w-full">
     <!--<router-view v-if="connected && dataUpdated"></router-view>-->
-    <router-view></router-view>
+    <router-view v-if="connected && dataUpdated"></router-view>
   </div>
 </template>

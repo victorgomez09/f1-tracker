@@ -1,5 +1,5 @@
 export type F1Driver = {
-  nr: string;
+  Number: string;
 
   broadcastName: string;
   fullName: string;

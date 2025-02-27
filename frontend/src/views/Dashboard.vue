@@ -1,22 +1,17 @@
 <script setup lang="ts">
 import { computed, isProxy, ref, toRaw } from "vue";
 
-import Driver from "../components/driver/Driver.vue";
-import RaceDetails from "../components/race-details/RaceDetails.vue";
-import RaceControl from "../components/race-control/RaceControl.vue";
-import RaceMap from "../components/race-map/RaceMap.vue";
-
-import { viewMode } from "../store/viewMode.store";
-import { dashboardData } from "../store/data.store";
-import { sortPos } from "../utils/position.utils";
-import RaceRadio from "../components/race-radios/RaceRadio.vue";
-import { sortUtc } from "../utils/time.util";
 import mockData from "../../example_data.json";
+import { dashboardData } from "../store/data.store";
+import { viewMode } from "../store/viewMode.store";
+import { sortPos } from "../utils/position.utils";
+import { sortUtc } from "../utils/time.util";
 import TelemetryTable from "@/components/telemetry/TelemetryTable.vue";
 
 const dataProxy = isProxy(dashboardData)
   ? toRaw(dashboardData)
   : dashboardData.value;
+console.log("dataProxy", dataProxy);
 const data =
   dataProxy == null ||
   dataProxy === undefined ||
@@ -49,7 +44,7 @@ const radiosSorted = computed(() => {
 </script>
 
 <template>
-  <div v-if="!liveTimingViewOption">
+  <!--<div v-if="!liveTimingViewOption">
     <div class="flex flex-col flex-1 bg-base-300">
       <RaceDetails
         :session="session"
@@ -171,5 +166,8 @@ const radiosSorted = computed(() => {
     <div>
       <TelemetryTable :data="driversSorted" />
     </div>
+  </div> -->
+  <div>
+    <TelemetryTable />
   </div>
 </template>

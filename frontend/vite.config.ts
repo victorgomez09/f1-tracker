@@ -19,7 +19,7 @@ export default defineConfig({
   },
   server: {
     allowedHosts: [
-      "5173-victorgomez09-f1tracker-a7zkp3fi4k8.ws-eu118.gitpod.io",
+      "5173-victorgomez09-f1tracker-rkauu33dlup.ws-eu118.gitpod.io",
     ],
   },
 });

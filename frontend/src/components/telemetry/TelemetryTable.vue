@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { Button } from "@/components/ui/button";
+import { valueUpdater } from "@/lib/utils";
 import type {
   ColumnDef,
   ColumnFiltersState,
@@ -6,8 +8,6 @@ import type {
   SortingState,
   VisibilityState,
 } from "@tanstack/vue-table";
-import { valueUpdater } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 
 import {
   DropdownMenu,
@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { F1 } from "@/models/f1.model";
 import {
   FlexRender,
   getCoreRowModel,
@@ -32,23 +33,20 @@ import {
   getSortedRowModel,
   useVueTable,
 } from "@tanstack/vue-table";
-import { ChevronDown, Divide } from "lucide-vue-next";
-import { h, PropType, ref } from "vue";
-import { F1 } from "@/models/f1.model";
-import { F1CarData } from "@/models/car.model";
+import { ChevronDown } from "lucide-vue-next";
+import { h, isProxy, ref, shallowRef, toRaw } from "vue";
+
+import { driversStore } from "../../store/data.store";
 import { F1Driver } from "@/models/driver.model";
 
-const props = defineProps({
-  data: Object as PropType<any>,
-});
-
-console.log("data", props.data);
-const columns: ColumnDef<F1>[] = [
+const dataProxy = isProxy(driversStore) ? toRaw(driversStore) : driversStore;
+console.log("data from telemetry", dataProxy);
+const columns: ColumnDef<F1Driver>[] = [
   {
-    accessorKey: "position",
+    accessorKey: "Position",
     header: "POS",
     cell: ({ row }) =>
-      h("div", { class: "capitalize" }, row.getValue("position")),
+      h("div", { class: "capitalize" }, row.getValue("Position")),
   },
   {
     accessorKey: "teamColor",
@@ -106,8 +104,10 @@ const columnVisibility = ref<VisibilityState>({});
 const rowSelection = ref({});
 const expanded = ref<ExpandedState>({});
 
+const data = shallowRef(dataProxy.data);
+
 const table = useVueTable({
-  data: props.data,
+  data: data,
   columns,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
