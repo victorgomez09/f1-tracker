@@ -123,6 +123,7 @@ func (p *Parser) SelectTelemetrySources(drivers []int) {
 	}
 
 	tmp := make(map[int]bool)
+	fmt.Println("drivers", drivers)
 	for _, driver := range drivers {
 		tmp[driver] = true
 	}
@@ -350,7 +351,6 @@ func (p *Parser) handleMessage(name string, dat map[string]interface{}, timestam
 		outgoing := p.parseDriverList(dat, timestamp)
 		if p.requestedData&Drivers == Drivers && outgoing != nil {
 			// Is always only one record
-			fmt.Println("outgoing[0]", outgoing[0])
 			p.output.AddDrivers(outgoing[0])
 		}
 

@@ -1,6 +1,6 @@
 import { F1CarData } from "./car.model";
 import { F1ExtrapolatedClock } from "./clock.model";
-import { F1Driver } from "./driver.model";
+import { Driver } from "./driver.model";
 import { F1Laps } from "./laps.model";
 import { DriverPositionBatch } from "./position.model";
 import { F1RaceControlMessage } from "./race-control.model";
@@ -14,7 +14,7 @@ export type F1 = {
   trackStatus: F1TrackStatus;
   extrapolatedClock: F1ExtrapolatedClock;
   weather: F1WeatherData;
-  drivers: F1Driver[];
+  drivers: Driver[];
   raceControlMessages: F1RaceControlMessage[];
   positionBatches: DriverPositionBatch[];
   teamRadios: TeamRadioType[];

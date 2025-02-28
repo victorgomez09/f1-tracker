@@ -1,67 +1,58 @@
-export type F1Driver = {
-  Number: string;
-
-  broadcastName: string;
-  fullName: string;
-  firstName: string;
-  lastName: string;
-  short: string;
-  country: string;
-
-  line: number;
-  position: string;
-  positionChange: number;
-
-  teamName: string;
-  teamColor: string;
-
-  status: "OUT" | "RETIRED" | "STOPPED" | "PIT" | "PIT OUT" | "CUTOFF" | null;
-  cutoff: boolean;
-
-  gapToLeader: string;
-  gapToFront: string;
-  catchingFront: boolean;
-
-  sectors: Sector[];
-  stints: Stint[];
-
-  drs: Drs;
-  laps: number;
-  lapTimes: LapTimes;
-
-  metrics: Metrics;
+export type Driver = {
+  Timestamp: Date;
+  Position: number;
+  Name: string;
+  ShortName: string;
+  Number: number;
+  Team: string;
+  HexColor: string;
+  Color: { R: number; G: number; B: number; A: number };
+  TimeDiffToFastest: number;
+  TimeDiffToPositionAhead: number;
+  GapToLeader: number;
+  PreviousSegmentIndex: number;
+  Segment: number[];
+  Sector1: number;
+  Sector1PersonalFastest: boolean;
+  Sector1OverallFastest: boolean;
+  Sector2: number;
+  Sector2PersonalFastest: boolean;
+  Sector2OverallFastest: boolean;
+  Sector3: number;
+  Sector3PersonalFastest: boolean;
+  Sector3OverallFastest: boolean;
+  LastLap: number;
+  LastLapPersonalFastest: boolean;
+  LastLapOverallFastest: boolean;
+  FastestLap: number;
+  OverallFastestLap: boolean;
+  KnockedOutOfQualifying: boolean;
+  ChequeredFlag: boolean;
+  Tire: number;
+  LapsOnTire: number;
+  Lap: number;
+  DRSOpen: boolean;
+  Pitstops: number;
+  PitStopTimes: [];
+  Location: DriverLocation;
+  SpeedTrap: number;
+  SpeedTrapPersonalFastest: boolean;
+  SpeedTrapOverallFastest: boolean;
 };
 
-export type TimeStats = {
-  value: string;
-  fastest: boolean;
-  pb: boolean;
-};
+export enum DriverLocation {
+  NoLocation = 0,
+  Pitlane = 1,
+  PitOut = 2,
+  OutLap = 3,
+  OnTrack = 4,
+  OutOfRace = 5,
+  Stopped = 6,
+}
 
-export type Sector = {
-  current: TimeStats;
-  last: TimeStats;
-  segments: number[];
-};
-
-export type LapTimes = {
-  last: TimeStats;
-  best: TimeStats;
-};
-
-export type Stint = {
-  compound: "soft" | "medium" | "hard" | "intermediate" | "wet";
-  laps: number;
-  new: boolean;
-};
-
-export type Drs = {
-  on: boolean;
-  possible: boolean;
-};
-
-export type Metrics = {
-  gear: number;
-  rpm: number;
-  speed: number;
+export type PitStop = {
+  Lap: number;
+  PitlaneEntry: number;
+  PitlaneExit: number;
+  PitlaneTime: number;
 };

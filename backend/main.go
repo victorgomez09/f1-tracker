@@ -54,8 +54,10 @@ type DataStruct struct {
 }
 
 func GetData(c echo.Context, ws *websocket.Conn) F1GopherLib {
+	const dataSources = parser.EventTime | parser.Timing | parser.Event | parser.RaceControl |
+		parser.TeamRadio | parser.Weather | parser.Location | parser.Telemetry | parser.Drivers
 	liveConnection, _ := CreateLive(
-		parser.EventTime|parser.Timing|parser.Event|parser.RaceControl|parser.TeamRadio|parser.Weather,
+		dataSources,
 		"",
 		"./.cache")
 	if liveConnection == nil {
@@ -63,18 +65,51 @@ func GetData(c echo.Context, ws *websocket.Conn) F1GopherLib {
 	}
 
 	var dataLock sync.Mutex
+	// Send session data
+	dataLock.Lock()
+	err := websocket.JSON.Send(ws, &DataStruct{
+		DataType: "SESSION",
+		Data:     liveConnection.Session(),
+	})
+	if err != nil {
+		c.Logger().Error(err)
+	}
+	dataLock.Unlock()
+	// General data
+	dataLock.Lock()
+	err2 := websocket.JSON.Send(ws, &DataStruct{
+		DataType: "GENERAL",
+		Data:     liveConnection.TimeLostInPitlane(),
+	})
+	if err2 != nil {
+		c.Logger().Error(err)
+	}
+	dataLock.Unlock()
+
 	for {
 		select {
-		case <-liveConnection.Drivers():
-			fmt.Println("DRIVERS")
+		case msg := <-liveConnection.Drivers():
+			dataLock.Lock()
+			var numbers []int
+			for _, driver := range msg.Drivers {
+				numbers = append(numbers, driver.Number)
+			}
+			liveConnection.SelectTelemetrySources(numbers)
+			// fmt.Println("msg", msg)
+			err := websocket.JSON.Send(ws, &DataStruct{
+				DataType: "DRIVERS",
+				Data:     msg,
+			})
+			if err != nil {
+				c.Logger().Error(err)
+			}
+			dataLock.Unlock()
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessDrivers(msg)
 			// }
 
 		case msg := <-liveConnection.Timing():
-			fmt.Println("TIMING")
 			dataLock.Lock()
-			// fmt.Println("msg", msg)
 			err := websocket.JSON.Send(ws, &DataStruct{
 				DataType: "TIMING",
 				Data:     msg,
@@ -92,51 +127,53 @@ func GetData(c echo.Context, ws *websocket.Conn) F1GopherLib {
 			// 	d.panels[x].ProcessTiming(msg)
 			// }
 
-		case <-liveConnection.Event():
-			fmt.Println("EVENTS")
-			// d.eventLock.Lock()
-			// d.event = msg
-			// d.eventLock.Unlock()
-
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessEvent(msg)
-			// }
+		case msg := <-liveConnection.Event():
+			dataLock.Lock()
+			err := websocket.JSON.Send(ws, &DataStruct{
+				DataType: "EVENT",
+				Data:     msg,
+			})
+			if err != nil {
+				c.Logger().Error(err)
+			}
+			dataLock.Unlock()
 
 		case <-liveConnection.Time():
-			fmt.Println("TIME")
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessEventTime(msg)
 			// }
 
-		case msg := <-liveConnection.RaceControlMessages():
-			fmt.Println("RCMS")
-			dataLock.Lock()
-			fmt.Println("msg", msg)
-			dataLock.Unlock()
+		case <-liveConnection.RaceControlMessages():
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessRaceControlMessages(msg)
 			// }
 
 		case <-liveConnection.Weather():
-			fmt.Println("WEATHER")
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessWeather(msg)
 			// }
 
 		case <-liveConnection.Radio():
-			fmt.Println("RADIO")
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessRadio(msg)
 			// }
 
 		case <-liveConnection.Location():
-			fmt.Println("LOCATION")
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessLocation(msg)
 			// }
 
-		case <-liveConnection.Telemetry():
-			fmt.Println("TELEMETRY")
+		case msg := <-liveConnection.Telemetry():
+			dataLock.Lock()
+			// fmt.Println("msg", msg)
+			err := websocket.JSON.Send(ws, &DataStruct{
+				DataType: "TELEMETRY",
+				Data:     msg,
+			})
+			if err != nil {
+				c.Logger().Error(err)
+			}
+			dataLock.Unlock()
 			// for x := range d.panels {
 			// 	d.panels[x].ProcessTelemetry(msg)
 			// }
@@ -145,6 +182,4 @@ func GetData(c echo.Context, ws *websocket.Conn) F1GopherLib {
 		// Data has changed so force a UI redraw
 		// giu.Update()
 	}
-
-	return liveConnection
 }

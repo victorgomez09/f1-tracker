@@ -127,6 +127,9 @@ onMounted(() => {
 <template>
   <div class="flex flex-1 h-full w-full">
     <!--<router-view v-if="connected && dataUpdated"></router-view>-->
-    <router-view v-if="connected && dataUpdated"></router-view>
+    <router-view
+      v-if="connected && dataUpdated"
+      class="flex flex-1 w-full"
+    ></router-view>
   </div>
 </template>

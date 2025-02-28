@@ -11,11 +11,11 @@ import DriverLaps from "./DriverLaps.vue";
 import DriverGap from "./DriverGap.vue";
 import DriverSectors from "./DriverSectors.vue";
 import DriverTyres from "./DriverTyres.vue";
-import { F1Driver } from "../../models/driver.model";
+import { Driver } from "../../models/driver.model";
 import { F1CarData } from "../../models/car.model";
 
 const props = defineProps({
-  driver: Object as PropType<F1Driver>,
+  driver: Object as PropType<Driver>,
   carData: Object as PropType<F1CarData>,
   position: String,
 });

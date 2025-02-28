@@ -1,241 +1,537 @@
 <script setup lang="ts">
-import { Button } from "@/components/ui/button";
-import { valueUpdater } from "@/lib/utils";
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  ExpandedState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/vue-table";
+import { computed, ref, watchEffect } from "vue";
+import Timestamp from "timestamp-nano";
 
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { F1 } from "@/models/f1.model";
-import {
-  FlexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useVueTable,
-} from "@tanstack/vue-table";
-import { ChevronDown } from "lucide-vue-next";
-import { h, isProxy, ref, shallowRef, toRaw } from "vue";
+  useDriverStore,
+  useEventStore,
+  useGeneralStore,
+  useSessionStore,
+} from "@/store/data.store";
+import { useTelemetryStore } from "@/store/data.store";
+import { Driver, DriverLocation, PitStop } from "@/models/driver.model";
+import { Session } from "@/models/session.model";
+import { Progress } from "@/components/ui/progress";
 
-import { driversStore } from "../../store/data.store";
-import { F1Driver } from "@/models/driver.model";
+const sorted = computed(() =>
+  useDriverStore.drivers.sort((a, b) => a.Position - b.Position)
+);
 
-const dataProxy = isProxy(driversStore) ? toRaw(driversStore) : driversStore;
-console.log("data from telemetry", dataProxy);
-const columns: ColumnDef<F1Driver>[] = [
-  {
-    accessorKey: "Position",
-    header: "POS",
-    cell: ({ row }) =>
-      h("div", { class: "capitalize" }, row.getValue("Position")),
-  },
-  {
-    accessorKey: "teamColor",
-    header: "Driver",
-    cell: ({ row }) =>
-      h(
-        "div",
-        {
-          class: `capitalize`,
-          style: { color: "#" + row.getValue("teamColor") },
-        },
-        row.getValue("teamColor")
-      ),
-  },
-  {
-    accessorKey: "gear",
-    header: "Gear / RPM",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("gear")),
-  },
-  {
-    accessorKey: "drs",
-    header: "DRS",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("drs")),
-  },
-  {
-    accessorKey: "time",
-    header: "Time",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("drs")),
-  },
-  {
-    accessorKey: "gap",
-    header: "Gap",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("drs")),
-  },
-  {
-    accessorKey: "type",
-    header: "Tyre",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("drs")),
-  },
-  {
-    accessorKey: "info",
-    header: "Info",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("drs")),
-  },
-  {
-    accessorKey: "sctors",
-    header: "sectors",
-    cell: ({ row }) => h("div", { class: "capitalize" }, row.getValue("drs")),
-  },
-];
+const getMinisectorColor = (segment: number) => {
+  // None SegmentType = iota
+  // YellowSegment
+  // GreenSegment
+  // InvalidSegment // Doesn't get displayed, cut corner/boundaries or invalid segment time?
+  // PurpleSegment
+  // RedSegment     // After chequered flag/stopped on track
+  // PitlaneSegment // In pitlane
+  // Mystery
+  // Mystery2 // ??? 2021 - Turkey Practice_2
+  // Mystery3 // ??? 2020 - Italy Race
+  switch (segment) {
+    case 1:
+      return "bg-yellow-500";
+    case 2:
+      return "bg-green-500";
+    case 3:
+      return "bg-black-500";
+    case 4:
+      return "bg-violet-500";
+    case 5:
+      return "bg-red-500";
+    case 6:
+      return "bg-white";
+    case 7:
+    case 8:
+    case 9:
+      return "bg-blue-500";
+    default:
+      return "bg-white";
+  }
+};
 
-const sorting = ref<SortingState>([]);
-const columnFilters = ref<ColumnFiltersState>([]);
-const columnVisibility = ref<VisibilityState>({});
-const rowSelection = ref({});
-const expanded = ref<ExpandedState>({});
+const parseDuration = (time: number = 0): string => {
+  if (time == 0) {
+    return "";
+  }
 
-const data = shallowRef(dataProxy.data);
+  let milliseconds = Timestamp.fromTimeT(time).toDate().getMilliseconds();
+  let minutes = milliseconds / (1000 * 60);
+  milliseconds -= minutes * 60 * 1000;
+  let seconds = milliseconds / 1000;
+  milliseconds -= seconds * 1000;
 
-const table = useVueTable({
-  data: data,
-  columns,
-  getCoreRowModel: getCoreRowModel(),
-  getPaginationRowModel: getPaginationRowModel(),
-  getSortedRowModel: getSortedRowModel(),
-  getFilteredRowModel: getFilteredRowModel(),
-  getExpandedRowModel: getExpandedRowModel(),
-  onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-  onColumnFiltersChange: (updaterOrValue) =>
-    valueUpdater(updaterOrValue, columnFilters),
-  onColumnVisibilityChange: (updaterOrValue) =>
-    valueUpdater(updaterOrValue, columnVisibility),
-  onRowSelectionChange: (updaterOrValue) =>
-    valueUpdater(updaterOrValue, rowSelection),
-  onExpandedChange: (updaterOrValue) => valueUpdater(updaterOrValue, expanded),
-  state: {
-    get sorting() {
-      return sorting.value;
-    },
-    get columnFilters() {
-      return columnFilters.value;
-    },
-    get columnVisibility() {
-      return columnVisibility.value;
-    },
-    get rowSelection() {
-      return rowSelection.value;
-    },
-    get expanded() {
-      return expanded.value;
-    },
-  },
+  let isNegative = false;
+  if (minutes < 0) {
+    minutes = -minutes;
+    isNegative = true;
+  }
+  if (seconds < 0) {
+    seconds = -seconds;
+    isNegative = true;
+  }
+  if (milliseconds < 0) {
+    milliseconds = -milliseconds;
+    isNegative = true;
+  }
+
+  // If no minutes then don't display zero but pad with spaces for display alignment
+  if (isNegative) {
+    return `  ${seconds}.${milliseconds}`;
+    // return fmt.Sprintf("-%01d:%02d.%03d", minutes, seconds, milliseconds)
+  }
+
+  // If no minutes then don't display zero but pad with spaces for display alignment
+  if (minutes == 0) {
+    return `  ${seconds}.${milliseconds}`;
+    // return fmt.Sprintf("  %02d.%03d", seconds, milliseconds)
+  }
+
+  return `${minutes}:${seconds}.${milliseconds}`;
+  // return fmt.Sprintf("%01d:%02d.%03d", minutes, seconds, milliseconds)
+};
+
+const getCarPosition = (carPosition: number) => {
+  // NoLocation CarLocation = iota
+  // Pitlane
+  // PitOut
+  // OutLap
+  // OnTrack
+  // OutOfRace
+  // Stopped
+  switch (carPosition) {
+    case 1:
+      return "Pit lane";
+    case 2:
+      return "Pit Exit";
+    case 3:
+      return "Out Lap";
+    case 4:
+      return "On Track";
+    case 5:
+      return "Out";
+    case 6:
+      return "Stopped";
+    default:
+      break;
+  }
+};
+
+const getDriverTelemetry = (driver: Driver) => {
+  return useTelemetryStore.telemetry.find(
+    (t) => t.DriverNumber === driver.Number
+  );
+};
+
+const parseTimeColor = (personalFastest: boolean, overallFastest: boolean) => {
+  if (overallFastest) {
+    return "text-purple-500";
+  } else if (personalFastest) {
+    return "text-green-500";
+  } else {
+    return "text-yellow-500";
+  }
+};
+
+const parseTireColor = (tire: number) => {
+  switch (tire) {
+    case 1:
+      return "text-red-500";
+    case 2:
+      return "text-yello-500";
+    case 3:
+      return "text-white";
+    case 4:
+      return "text-green-500";
+    case 5:
+      return "text-blue-500";
+    default:
+      return "text-orange-500";
+  }
+};
+
+const parseLastPitTime = (pitStopTimes: PitStop[]) => {
+  if (pitStopTimes && pitStopTimes.length > 0) {
+    let lastPitlane = pitStopTimes[pitStopTimes.length - 1];
+
+    if (lastPitlane.PitlaneTime != 0) {
+      return parseDuration(lastPitlane.PitlaneTime);
+    }
+  }
+};
+
+const getPilanePosition = (driver: Driver) => {
+  let potentialPositionChange: number = 0;
+  let positionColor: string = "text-green-500";
+
+  if (
+    driver.Location != DriverLocation.Pitlane &&
+    driver.Location != DriverLocation.PitOut
+  ) {
+    let newPosition = driver.Position;
+    let pitTimeLost =
+      useGeneralStore.general.TimeLostInPitlane +
+      useGeneralStore.general.TimeLostInPitlane;
+    // Default value for the last car because we won't enter the loop
+    let timeToCarAhead = pitTimeLost;
+    let timeToCarBehind = 0;
+
+    let timeToClearPitlane = 1000 * 1000 * 10;
+    let gapToCar = 1000 * 1000 * 0;
+    let minGap = pitTimeLost - timeToClearPitlane;
+
+    for (
+      let driverBehind = 1;
+      driverBehind < useDriverStore.drivers.length;
+      driverBehind++
+    ) {
+      //timeToCarAhead = pitTimeLost
+
+      // Can't drop below stopped cars
+      if (
+        useDriverStore.drivers[driverBehind].Location ==
+          DriverLocation.Stopped ||
+        useDriverStore.drivers[driverBehind].Location ==
+          DriverLocation.OutOfRace
+      ) {
+        break;
+      }
+
+      newPosition++;
+
+      gapToCar += useDriverStore.drivers[driverBehind].TimeDiffToPositionAhead;
+
+      // If the gap to the prediction car is less than the time to drive past the pitlane then keep looking
+      if (gapToCar < minGap) {
+        continue;
+      }
+
+      timeToCarBehind = gapToCar - minGap;
+      timeToCarAhead =
+        useDriverStore.drivers[driverBehind].TimeDiffToPositionAhead -
+        timeToCarBehind;
+      break;
+    }
+
+    if (newPosition == driver.Position) {
+      timeToCarAhead += driver.TimeDiffToPositionAhead;
+    }
+
+    if (
+      driver.Location != DriverLocation.Stopped &&
+      driver.Location != DriverLocation.OutOfRace
+    ) {
+      // potentialPositionChange = fmt.Sprintf("%02d", newPosition)
+      potentialPositionChange = newPosition;
+    }
+
+    if (newPosition != driver.Position) {
+      // positionColor = colornames.Red
+      positionColor = "text-red-500";
+    }
+  } else {
+    positionColor = "text-white";
+    potentialPositionChange = 0;
+  }
+
+  return { potentialPositionChange, positionColor };
+};
+
+const progress = ref(13);
+
+watchEffect((cleanupFn) => {
+  const timer = setTimeout(() => (progress.value = 66), 500);
+  cleanupFn(() => clearTimeout(timer));
 });
 </script>
 
 <template>
-  <div class="w-full">
-    <div class="flex gap-2 items-center py-4">
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline" class="ml-auto">
-            Columns <ChevronDown class="ml-2 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuCheckboxItem
-            v-for="column in table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())"
-            :key="column.id"
-            class="capitalize"
-            :model-value="column.getIsVisible()"
-            @update:model-value="
-              (value) => {
-                column.toggleVisibility(!!value);
-              }
+  <div class="flex flex-col flex-1 w-full">
+    <div class="flex w-full">
+      <div
+        className="grid items-center gap-2 p-1 px-2 text-sm font-medium text-zinc-500 w-full"
+        :style="{
+          gridTemplateColumns:
+            useSessionStore.session === Session.RaceSession
+              ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+              : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+        }"
+      >
+        <p>Position</p>
+        <p>Micro-sectors</p>
+        <p>Fastest</p>
+        <p>Gap</p>
+        <p>S1</p>
+        <p>S2</p>
+        <p>S3</p>
+        <p>Last lap</p>
+        <p>DRS</p>
+        <p>Tire / Laps</p>
+        <p>Pits</p>
+        <p v-if="useSessionStore.session === Session.RaceSession">
+          Last pit stop
+        </p>
+        <p v-if="useSessionStore.session === Session.RaceSession">
+          Pit position
+        </p>
+        <p>Telemetry</p>
+        <p>Speed trap</p>
+        <p>Location</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col">
+      <div
+        v-for="driver in sorted"
+        class="flex select-none flex-col gap-1 p-1.5 border-b"
+      >
+        <div
+          class="grid items-center gap-2 w-full"
+          :style="{
+            gridTemplateColumns:
+              useSessionStore.session === Session.RaceSession
+                ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+                : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+          }"
+        >
+          <!-- POSITION -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+            :style="{ color: driver.HexColor }"
+          >
+            {{ driver.Position }} {{ driver.ShortName }}
+          </span>
+
+          <!-- MICRO-SECTORS -->
+          <div class="flex gap-2">
+            <!-- {{ driver.Segment }} -->
+            <div
+              v-for="(status, index) in driver.Segment"
+              class="flex items-center gap-2"
+            >
+              <div
+                class="border"
+                :class="getMinisectorColor(status)"
+                :style="{ height: '10px', width: '8px', borderRadius: '3.2px' }"
+              ></div>
+              <div
+                v-if="
+                  index == useEventStore.event.Sector1Segments - 1 ||
+                  index ==
+                    useEventStore.event.Sector1Segments +
+                      useEventStore.event.Sector2Segments -
+                      1
+                "
+                class="text-gray-600"
+              >
+                |
+              </div>
+            </div>
+          </div>
+
+          <!-- FASTEST LAP -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+          >
+            {{ parseDuration(driver.FastestLap) }}
+          </span>
+
+          <!-- GAP -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+          >
+            {{ parseDuration(driver.TimeDiffToPositionAhead) }}
+          </span>
+
+          <!-- S1 -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+            :class="
+              parseTimeColor(
+                driver.Sector1PersonalFastest,
+                driver.Sector1OverallFastest
+              )
             "
           >
-            {{ column.id }}
-          </DropdownMenuCheckboxItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-    <div class="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow
-            v-for="headerGroup in table.getHeaderGroups()"
-            :key="headerGroup.id"
+            {{ parseDuration(driver.Sector1) }}
+          </span>
+
+          <!-- S2 -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+            :class="
+              parseTimeColor(
+                driver.Sector2PersonalFastest,
+                driver.Sector2OverallFastest
+              )
+            "
           >
-            <TableHead v-for="header in headerGroup.headers" :key="header.id">
-              <FlexRender
-                v-if="!header.isPlaceholder"
-                :render="header.column.columnDef.header"
-                :props="header.getContext()"
-              />
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <template v-if="table.getRowModel().rows?.length">
-            <template v-for="row in table.getRowModel().rows" :key="row.id">
-              <TableRow :data-state="row.getIsSelected() && 'selected'">
-                <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                  <FlexRender
-                    :render="cell.column.columnDef.cell"
-                    :props="cell.getContext()"
-                  />
-                </TableCell>
-              </TableRow>
-              <TableRow v-if="row.getIsExpanded()">
-                <TableCell :colspan="row.getAllCells().length">
-                  {{ JSON.stringify(row.original) }}
-                </TableCell>
-              </TableRow>
-            </template>
-          </template>
+            {{ parseDuration(driver.Sector2) }}
+          </span>
 
-          <TableRow v-else>
-            <TableCell :colspan="columns.length" class="h-24 text-center">
-              No results.
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </div>
+          <!-- S3 -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+            :class="
+              parseTimeColor(
+                driver.Sector3PersonalFastest,
+                driver.Sector3OverallFastest
+              )
+            "
+          >
+            {{ parseDuration(driver.Sector3) }}
+          </span>
 
-    <div class="flex items-center justify-end space-x-2 py-4">
-      <div class="flex-1 text-sm text-muted-foreground">
-        {{ table.getFilteredSelectedRowModel().rows.length }} of
-        {{ table.getFilteredRowModel().rows.length }} row(s) selected.
-      </div>
-      <div class="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanPreviousPage()"
-          @click="table.previousPage()"
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="!table.getCanNextPage()"
-          @click="table.nextPage()"
-        >
-          Next
-        </Button>
+          <!-- Last lap -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+            :class="
+              parseTimeColor(
+                driver.LastLapPersonalFastest,
+                driver.LastLapOverallFastest
+              )
+            "
+          >
+            {{ parseDuration(driver.LastLap) }}
+          </span>
+
+          <!-- DRS -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            :class="{
+              'text-green-500': getDriverTelemetry(driver)?.DRS,
+              'text-red-500': !getDriverTelemetry(driver)?.DRS,
+            }"
+          >
+            DRS
+          </span>
+
+          <!-- Tire / Laps -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            :class="parseTireColor(driver.Tire)"
+          >
+            {{ driver.Tire }} / {{ driver.LapsOnTire }}
+          </span>
+
+          <!-- Pits -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+          >
+            {{ driver.Pitstops }}
+          </span>
+
+          <!-- Last pit stop time -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            v-if="useSessionStore.session === Session.RaceSession"
+          >
+            {{ parseLastPitTime(driver.PitStopTimes) }}
+          </span>
+
+          <!-- Pit position -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            :class="getPilanePosition(driver).positionColor"
+            v-if="useSessionStore.session === Session.RaceSession"
+          >
+            {{ getPilanePosition(driver).potentialPositionChange }}
+          </span>
+
+          <!-- Telemetry -->
+          <div className="flex flex-col items-center gap-2 place-self-start">
+            <p
+              className="flex h-8 w-8 items-center justify-center font-mono text-lg"
+            >
+              {{ getDriverTelemetry(driver)?.Gear }}
+            </p>
+
+            <div>
+              <p className="text-right font-mono font-medium leading-none">
+                {{ getDriverTelemetry(driver)?.Speed }}
+              </p>
+              <p className="text-sm leading-none text-zinc-600">KM/h</p>
+            </div>
+
+            <div className="flex flex-col">
+              <div className="flex flex-col gap-1">
+                <!-- <DriverPedals
+                  className="bg-red-500"
+                  value="{carData[5]}"
+                  maxValue="{1}"
+                />
+                <DriverPedals
+                  className="bg-emerald-500"
+                  value="{carData[4]}"
+                  maxValue="{100}"
+                />
+                <DriverPedals
+                  className="bg-blue-500"
+                  value="{carData[0]}"
+                  maxValue="{15000}"
+                  /> -->
+                <!-- Throttle -->
+                <div
+                  className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800"
+                >
+                  <div
+                    class="h-1.5 bg-green-500"
+                    :style="{
+                      width: `${
+                        getDriverTelemetry(driver)?.Throttle || 0 / 100
+                      }%`,
+                    }"
+                    :animate="{ transitionDuration: '0.1s' }"
+                    layout
+                  ></div>
+                </div>
+                <!-- Brake -->
+                <div
+                  className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800"
+                >
+                  <div
+                    class="h-1.5 bg-red-500"
+                    :style="{
+                      width: `${getDriverTelemetry(driver)?.Brake || 0 / 100}%`,
+                    }"
+                    :animate="{ transitionDuration: '0.1s' }"
+                    layout
+                  ></div>
+                </div>
+                <!-- RPM -->
+                {{ getDriverTelemetry(driver)?.RPM || 0 / 15000 }}
+                {{ (getDriverTelemetry(driver)?.RPM || 0 / 15000) * 100 }}
+                <div
+                  className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800"
+                >
+                  <div
+                    class="h-1.5 bg-blue-500"
+                    :style="{
+                      width: `${getDriverTelemetry(driver)?.RPM || 0 / 15000}%`,
+                    }"
+                    :animate="{ transitionDuration: '0.1s' }"
+                    layout
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- {{ getDriverTelemetry(driver)?.Throttle }} -->
+
+          <!-- Speed trap -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+          >
+            {{ driver.SpeedTrap }} KM/h
+          </span>
+
+          <!-- Location -->
+          <span
+            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+          >
+            {{ getCarPosition(driver.Location) }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
