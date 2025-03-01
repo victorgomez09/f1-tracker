@@ -62,6 +62,7 @@ func GetData(c echo.Context, ws *websocket.Conn) F1GopherLib {
 		"./.cache")
 	if liveConnection == nil {
 		fmt.Println("There is no live session currently happening.")
+		return nil
 	}
 
 	var dataLock sync.Mutex

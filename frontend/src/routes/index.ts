@@ -1,14 +1,21 @@
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
   // 4. Provide the history implementation to use. We
   // are using the hash history for simplicity here.
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes: [
     {
       path: "/",
-      name: "F1 Live Timming",
+      component: () => import("../views/Landing.vue"),
+    },
+    {
+      path: "/dashboard",
       component: () => import("../views/Dashboard.vue"),
+    },
+    {
+      path: "/telemetry",
+      component: () => import("../views/Telemetry.vue"),
     },
   ], // short for `routes: routes`
 });

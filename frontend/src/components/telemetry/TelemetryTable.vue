@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watchEffect } from "vue";
-import Timestamp from "timestamp-nano";
+import { computed } from "vue";
 
 import {
   useDriverStore,
@@ -11,7 +10,7 @@ import {
 import { useTelemetryStore } from "@/store/data.store";
 import { Driver, DriverLocation, PitStop } from "@/models/driver.model";
 import { Session } from "@/models/session.model";
-import { Progress } from "@/components/ui/progress";
+import moment from "moment";
 
 const sorted = computed(() =>
   useDriverStore.drivers.sort((a, b) => a.Position - b.Position)
@@ -50,45 +49,17 @@ const getMinisectorColor = (segment: number) => {
   }
 };
 
-const parseDuration = (time: number = 0): string => {
-  if (time == 0) {
+const parseDuration = (duration: number = 0): string => {
+  if (duration == 0) {
     return "";
   }
 
-  let milliseconds = Timestamp.fromTimeT(time).toDate().getMilliseconds();
-  let minutes = milliseconds / (1000 * 60);
-  milliseconds -= minutes * 60 * 1000;
-  let seconds = milliseconds / 1000;
-  milliseconds -= seconds * 1000;
-
-  let isNegative = false;
-  if (minutes < 0) {
-    minutes = -minutes;
-    isNegative = true;
-  }
-  if (seconds < 0) {
-    seconds = -seconds;
-    isNegative = true;
-  }
-  if (milliseconds < 0) {
-    milliseconds = -milliseconds;
-    isNegative = true;
+  const parsed = moment(duration)
+  if (parsed.minutes() <= 0) {
+    return moment(duration).format('ss.SSS');
   }
 
-  // If no minutes then don't display zero but pad with spaces for display alignment
-  if (isNegative) {
-    return `  ${seconds}.${milliseconds}`;
-    // return fmt.Sprintf("-%01d:%02d.%03d", minutes, seconds, milliseconds)
-  }
-
-  // If no minutes then don't display zero but pad with spaces for display alignment
-  if (minutes == 0) {
-    return `  ${seconds}.${milliseconds}`;
-    // return fmt.Sprintf("  %02d.%03d", seconds, milliseconds)
-  }
-
-  return `${minutes}:${seconds}.${milliseconds}`;
-  // return fmt.Sprintf("%01d:%02d.%03d", minutes, seconds, milliseconds)
+  return moment(duration).format('mm:ss.SSS');
 };
 
 const getCarPosition = (carPosition: number) => {
@@ -138,7 +109,7 @@ const parseTireColor = (tire: number) => {
     case 1:
       return "text-red-500";
     case 2:
-      return "text-yello-500";
+      return "text-yellow-500";
     case 3:
       return "text-white";
     case 4:
@@ -149,6 +120,43 @@ const parseTireColor = (tire: number) => {
       return "text-orange-500";
   }
 };
+
+const parseTireType = (tire: number) => {
+  // Unknown TireType = iota
+  // Soft
+  // Medium
+  // Hard
+  // Intermediate
+  // Wet
+  // Test
+  // HYPERSOFT
+  // ULTRASOFT
+  // SUPERSOFT
+  switch (tire) {
+    case 0:
+      return "Unknown"
+    case 1:
+      return "Soft"
+    case 2:
+      return "Medium"
+    case 3:
+      return "Hard"
+    case 4:
+      return "Intermediate"
+    case 5:
+      return "Wet"
+    case 6:
+      return "Test"
+    case 7:
+      return "HYPERSOFT"
+    case 8:
+      return "ULTRASOFT"
+    case 9:
+      return "SUPERSOFT"
+    default:
+      break;
+  }
+}
 
 const parseLastPitTime = (pitStopTimes: PitStop[]) => {
   if (pitStopTimes && pitStopTimes.length > 0) {
@@ -190,9 +198,9 @@ const getPilanePosition = (driver: Driver) => {
       // Can't drop below stopped cars
       if (
         useDriverStore.drivers[driverBehind].Location ==
-          DriverLocation.Stopped ||
+        DriverLocation.Stopped ||
         useDriverStore.drivers[driverBehind].Location ==
-          DriverLocation.OutOfRace
+        DriverLocation.OutOfRace
       ) {
         break;
       }
@@ -236,27 +244,17 @@ const getPilanePosition = (driver: Driver) => {
 
   return { potentialPositionChange, positionColor };
 };
-
-const progress = ref(13);
-
-watchEffect((cleanupFn) => {
-  const timer = setTimeout(() => (progress.value = 66), 500);
-  cleanupFn(() => clearTimeout(timer));
-});
 </script>
 
 <template>
   <div class="flex flex-col flex-1 w-full">
     <div class="flex w-full">
-      <div
-        className="grid items-center gap-2 p-1 px-2 text-sm font-medium text-zinc-500 w-full"
-        :style="{
-          gridTemplateColumns:
-            useSessionStore.session === Session.RaceSession
-              ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-              : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
-        }"
-      >
+      <div className="grid items-center gap-2 p-1 px-2 text-sm font-medium text-zinc-500 w-full" :style="{
+        gridTemplateColumns:
+          useSessionStore.session === Session.RaceSession
+            ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+            : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+      }">
         <p>Position</p>
         <p>Micro-sectors</p>
         <p>Fastest</p>
@@ -281,168 +279,125 @@ watchEffect((cleanupFn) => {
     </div>
 
     <div class="flex flex-col">
-      <div
-        v-for="driver in sorted"
-        class="flex select-none flex-col gap-1 p-1.5 border-b"
-      >
-        <div
-          class="grid items-center gap-2 w-full"
-          :style="{
-            gridTemplateColumns:
-              useSessionStore.session === Session.RaceSession
-                ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-                : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
-          }"
-        >
+      <div v-for="driver in sorted" class="flex select-none flex-col gap-1 p-1.5 border-b">
+        <div class="grid items-center gap-2 w-full" :style="{
+          gridTemplateColumns:
+            useSessionStore.session === Session.RaceSession
+              ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+              : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+        }">
           <!-- POSITION -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-            :style="{ color: driver.HexColor }"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
+            :style="{ color: driver.HexColor }">
             {{ driver.Position }} {{ driver.ShortName }}
           </span>
 
           <!-- MICRO-SECTORS -->
           <div class="flex gap-2">
             <!-- {{ driver.Segment }} -->
-            <div
-              v-for="(status, index) in driver.Segment"
-              class="flex items-center gap-2"
-            >
-              <div
-                class="border"
-                :class="getMinisectorColor(status)"
-                :style="{ height: '10px', width: '8px', borderRadius: '3.2px' }"
-              ></div>
-              <div
-                v-if="
-                  index == useEventStore.event.Sector1Segments - 1 ||
-                  index ==
-                    useEventStore.event.Sector1Segments +
-                      useEventStore.event.Sector2Segments -
-                      1
-                "
-                class="text-gray-600"
-              >
+            <div v-for="(status, index) in driver.Segment" class="flex items-center gap-2">
+              <div class="border" :class="getMinisectorColor(status)"
+                :style="{ height: '10px', width: '8px', borderRadius: '3.2px' }"></div>
+              <div v-if="
+                index == useEventStore.event.Sector1Segments - 1 ||
+                index ==
+                useEventStore.event.Sector1Segments +
+                useEventStore.event.Sector2Segments -
+                1
+              " class="text-gray-600">
                 |
               </div>
             </div>
           </div>
 
           <!-- FASTEST LAP -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black">
             {{ parseDuration(driver.FastestLap) }}
           </span>
 
           <!-- GAP -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-          >
-            {{ parseDuration(driver.TimeDiffToPositionAhead) }}
-          </span>
+          <div class="flex flex-col justify-between gap-0.5 px-1 py-1">
+            <span class="flex items-center justify-between gap-0.5 px-1 py-1 font-semibold">
+              {{ `${parseDuration(driver.TimeDiffToPositionAhead) !== '' ? '+' +
+                parseDuration(driver.TimeDiffToPositionAhead) : parseDuration(driver.TimeDiffToPositionAhead)}` }}
+            </span>
+
+            <span class="flex items-center justify-between gap-0.5 px-1 py-1 font-thin">
+              {{ `${parseDuration(driver.TimeDiffToFastest) !== '' ? '+' +
+                parseDuration(driver.TimeDiffToFastest) : parseDuration(driver.TimeDiffToFastest)}` }}
+            </span>
+          </div>
 
           <!-- S1 -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-            :class="
-              parseTimeColor(
-                driver.Sector1PersonalFastest,
-                driver.Sector1OverallFastest
-              )
-            "
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+            driver.Sector1PersonalFastest,
+            driver.Sector1OverallFastest
+          )
+            ">
             {{ parseDuration(driver.Sector1) }}
           </span>
 
           <!-- S2 -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-            :class="
-              parseTimeColor(
-                driver.Sector2PersonalFastest,
-                driver.Sector2OverallFastest
-              )
-            "
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+            driver.Sector2PersonalFastest,
+            driver.Sector2OverallFastest
+          )
+            ">
             {{ parseDuration(driver.Sector2) }}
           </span>
 
           <!-- S3 -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-            :class="
-              parseTimeColor(
-                driver.Sector3PersonalFastest,
-                driver.Sector3OverallFastest
-              )
-            "
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+            driver.Sector3PersonalFastest,
+            driver.Sector3OverallFastest
+          )
+            ">
             {{ parseDuration(driver.Sector3) }}
           </span>
 
           <!-- Last lap -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-            :class="
-              parseTimeColor(
-                driver.LastLapPersonalFastest,
-                driver.LastLapOverallFastest
-              )
-            "
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+            driver.LastLapPersonalFastest,
+            driver.LastLapOverallFastest
+          )
+            ">
             {{ parseDuration(driver.LastLap) }}
           </span>
 
           <!-- DRS -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="{
-              'text-green-500': getDriverTelemetry(driver)?.DRS,
-              'text-red-500': !getDriverTelemetry(driver)?.DRS,
-            }"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black" :class="{
+            'text-green-500': getDriverTelemetry(driver)?.DRS,
+            'text-red-500': !getDriverTelemetry(driver)?.DRS,
+          }">
             DRS
           </span>
 
           <!-- Tire / Laps -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="parseTireColor(driver.Tire)"
-          >
-            {{ driver.Tire }} / {{ driver.LapsOnTire }}
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            :class="parseTireColor(driver.Tire)">
+            {{ parseTireType(driver.Tire) }} / {{ driver.LapsOnTire }}
           </span>
 
           <!-- Pits -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">
             {{ driver.Pitstops }}
           </span>
 
           <!-- Last pit stop time -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            v-if="useSessionStore.session === Session.RaceSession"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            v-if="useSessionStore.session === Session.RaceSession">
             {{ parseLastPitTime(driver.PitStopTimes) }}
           </span>
 
           <!-- Pit position -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="getPilanePosition(driver).positionColor"
-            v-if="useSessionStore.session === Session.RaceSession"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            :class="getPilanePosition(driver).positionColor" v-if="useSessionStore.session === Session.RaceSession">
             {{ getPilanePosition(driver).potentialPositionChange }}
           </span>
 
           <!-- Telemetry -->
           <div className="flex flex-col items-center gap-2 place-self-start">
-            <p
-              className="flex h-8 w-8 items-center justify-center font-mono text-lg"
-            >
+            <p className="flex h-8 w-8 items-center justify-center font-mono text-lg">
               {{ getDriverTelemetry(driver)?.Gear }}
             </p>
 
@@ -471,47 +426,25 @@ watchEffect((cleanupFn) => {
                   maxValue="{15000}"
                   /> -->
                 <!-- Throttle -->
-                <div
-                  className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800"
-                >
-                  <div
-                    class="h-1.5 bg-green-500"
-                    :style="{
-                      width: `${
-                        getDriverTelemetry(driver)?.Throttle || 0 / 100
+                <div className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
+                  <div class="h-1.5 bg-green-500" :style="{
+                    width: `${getDriverTelemetry(driver)?.Throttle || 0 / 100
                       }%`,
-                    }"
-                    :animate="{ transitionDuration: '0.1s' }"
-                    layout
-                  ></div>
+                  }" :animate="{ transitionDuration: '0.1s' }" layout></div>
                 </div>
                 <!-- Brake -->
-                <div
-                  className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800"
-                >
-                  <div
-                    class="h-1.5 bg-red-500"
-                    :style="{
-                      width: `${getDriverTelemetry(driver)?.Brake || 0 / 100}%`,
-                    }"
-                    :animate="{ transitionDuration: '0.1s' }"
-                    layout
-                  ></div>
+                <div className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
+                  <div class="h-1.5 bg-red-500" :style="{
+                    width: `${getDriverTelemetry(driver)?.Brake || 0 / 100}%`,
+                  }" :animate="{ transitionDuration: '0.1s' }" layout></div>
                 </div>
                 <!-- RPM -->
                 {{ getDriverTelemetry(driver)?.RPM || 0 / 15000 }}
                 {{ (getDriverTelemetry(driver)?.RPM || 0 / 15000) * 100 }}
-                <div
-                  className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800"
-                >
-                  <div
-                    class="h-1.5 bg-blue-500"
-                    :style="{
-                      width: `${getDriverTelemetry(driver)?.RPM || 0 / 15000}%`,
-                    }"
-                    :animate="{ transitionDuration: '0.1s' }"
-                    layout
-                  ></div>
+                <div className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
+                  <div class="h-1.5 bg-blue-500" :style="{
+                    width: `${getDriverTelemetry(driver)?.RPM || 0 / 15000}%`,
+                  }" :animate="{ transitionDuration: '0.1s' }" layout></div>
                 </div>
               </div>
             </div>
@@ -519,16 +452,12 @@ watchEffect((cleanupFn) => {
           <!-- {{ getDriverTelemetry(driver)?.Throttle }} -->
 
           <!-- Speed trap -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">
             {{ driver.SpeedTrap }} KM/h
           </span>
 
           <!-- Location -->
-          <span
-            class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-          >
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">
             {{ getCarPosition(driver.Location) }}
           </span>
         </div>

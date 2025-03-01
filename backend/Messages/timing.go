@@ -90,26 +90,26 @@ type Timing struct {
 	HexColor  string
 	Color     color.RGBA
 
-	TimeDiffToFastest       time.Duration
-	TimeDiffToPositionAhead time.Duration
-	GapToLeader             time.Duration
+	TimeDiffToFastest       int64
+	TimeDiffToPositionAhead int64
+	GapToLeader             int64
 
 	PreviousSegmentIndex   int
 	Segment                [MaxSegments]SegmentType
-	Sector1                time.Duration
+	Sector1                int64
 	Sector1PersonalFastest bool
 	Sector1OverallFastest  bool
-	Sector2                time.Duration
+	Sector2                int64
 	Sector2PersonalFastest bool
 	Sector2OverallFastest  bool
-	Sector3                time.Duration
+	Sector3                int64
 	Sector3PersonalFastest bool
 	Sector3OverallFastest  bool
-	LastLap                time.Duration
+	LastLap                int64
 	LastLapPersonalFastest bool
 	LastLapOverallFastest  bool
 
-	FastestLap        time.Duration
+	FastestLap        int64
 	OverallFastestLap bool
 
 	KnockedOutOfQualifying bool

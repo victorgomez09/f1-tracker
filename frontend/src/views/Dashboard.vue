@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, isProxy, ref, toRaw } from "vue";
+import { computed, isProxy, onMounted, ref, toRaw } from "vue";
 
 import mockData from "../../example_data.json";
 import { dashboardData } from "../store/data.store";
@@ -7,6 +7,128 @@ import { viewMode } from "../store/viewMode.store";
 import { sortPos } from "../utils/position.utils";
 import { sortUtc } from "../utils/time.util";
 import TelemetryTable from "@/components/telemetry/TelemetryTable.vue";
+import { parseData } from "@/utils/parse-data.utils";
+
+// Connect to websocket
+const socket = ref();
+const retry = ref();
+
+const delayMs = ref(0);
+const connected = ref(false);
+const blocking = ref(false);
+
+const dataUpdated = ref(false);
+
+const initWebsocket = (handleMessage: any) => {
+  if (retry.value) {
+    clearTimeout(retry.value);
+    retry.value = undefined;
+  }
+
+  // const wsUrl =
+  //   `${window.location.protocol.replace("http", "ws")}//` +
+  //   window.location.hostname +
+  //   (window.location.port ? `:${window.location.port}` : "") +
+  //   "/ws";
+
+  // const wsUrl =
+  //   "wss://victorgomez09-f1tracker-rkauu33dlup.ws-eu118.gitpod.io/wss";
+  const wsUrl = "ws://localhost:3001";
+
+  const ws = new WebSocket(wsUrl);
+
+  ws.addEventListener("open", () => {
+    connected.value = true;
+  });
+
+  ws.addEventListener("close", () => {
+    connected.value = false;
+    blocking.value = true;
+    () => {
+      if (!retry.value && !blocking.value)
+        retry.value = window.setTimeout(() => {
+          initWebsocket(handleMessage);
+        }, 1000);
+    };
+  });
+
+  ws.addEventListener("error", () => {
+    ws.close();
+  });
+
+  ws.addEventListener("message", ({ data }) => {
+    setTimeout(() => {
+      handleMessage(data);
+      console.log("message", data);
+    }, delayMs.value);
+  });
+
+  socket.value = ws;
+};
+
+onMounted(() => {
+  // setInterval(() => {
+  //   initWebsocket((data: any) => {
+  //     try {
+  //       const d = JSON.parse(data);
+  //       liveState.value = d;
+  //       updated.value = new Date();
+  //       dashboardData.data = d;
+  //       dataUpdated.value = true;
+  //     } catch (e) {
+  //       console.error(`could not process message: ${e}`);
+  //     }
+  //   });
+  // }, 100)
+  // const ws = new WebSocket(
+  //   "wss://3000-victorgomez09-f1tracker-rkauu33dlup.ws-eu118.gitpod.io/ws"
+  // );
+  const ws = new WebSocket(
+    "ws://localhost:3000/ws"
+  );
+
+  ws.addEventListener("open", () => {
+    console.log("open");
+    connected.value = true;
+  });
+
+  // ws.addEventListener("close", () => {
+  //   connected.value = false;
+  //   blocking.value = true;
+  //   () => {
+  //     if (!retry.value && !blocking.value)
+  //       retry.value = window.setTimeout(() => {
+  //         // initWebsocket(handleMessage);
+  //       }, 1000);
+  //   };
+  // });
+
+  // ws.addEventListener("error", () => {
+  //   ws.close();
+  // });
+
+  // ws.addEventListener("message", ({ data }) => {
+  //   setTimeout(() => {
+  //     // handleMessage(data);
+  //     console.log("message", data);
+  //   }, delayMs.value);
+  // });
+
+  ws.onmessage = (data) => {
+    try {
+      // const d: ServerResponse = JSON.parse(data.data);
+      // console.log("d", d);
+      // console.log("onmessage", data.data);
+      parseData(JSON.parse(data.data));
+      // liveState.value = d;
+      // updated.value = new Date();
+      // dashboardData.value = d;
+      dataUpdated.value = true;
+    } catch (e) {
+      console.error(`could not process message: ${e}`);
+    }
+  };
+});
 
 const dataProxy = isProxy(dashboardData)
   ? toRaw(dashboardData)
@@ -14,8 +136,8 @@ const dataProxy = isProxy(dashboardData)
 console.log("dataProxy", dataProxy);
 const data =
   dataProxy == null ||
-  dataProxy === undefined ||
-  Object.keys(dataProxy).length === 0
+    dataProxy === undefined ||
+    Object.keys(dataProxy).length === 0
     ? JSON.parse(mockData)
     : dataProxy;
 const { session } = data;

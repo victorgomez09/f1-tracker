@@ -16,13 +16,14 @@
 package parser
 
 import (
-	"github.com/f1gopher/f1gopherlib/Messages"
-	"github.com/f1gopher/f1gopherlib/connection"
 	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/f1gopher/f1gopherlib/Messages"
+	"github.com/f1gopher/f1gopherlib/connection"
 )
 
 func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time) ([]Messages.Timing, error) {
@@ -35,7 +36,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 	}
 
 	fastestLapChanged := false
-	var currentFastestLap time.Duration
+	var currentFastestLap int64
 	var err error
 
 	for driverNumber, data := range lines.(map[string]interface{}) {
@@ -73,7 +74,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 				}
 			}
 
-			currentDriver.TimeDiffToFastest = t
+			currentDriver.TimeDiffToFastest = t.Milliseconds()
 		}
 
 		value, exists = record["TimeDiffToPositionAhead"].(string)
@@ -87,7 +88,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 				}
 			}
 
-			currentDriver.TimeDiffToPositionAhead = t
+			currentDriver.TimeDiffToPositionAhead = t.Milliseconds()
 		}
 
 		value, exists = record["GapToLeader"].(string)
@@ -108,7 +109,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 
 			// TODO -  Leaders lap number - use it somewhere else?
 
-			currentDriver.GapToLeader = t
+			currentDriver.GapToLeader = t.Milliseconds()
 		}
 
 		value, exists = record["IntervalToPositionAhead"].(map[string]interface{})
@@ -128,7 +129,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 						p.ParseTimeError(connection.TimingDataFile, timestamp, "IntervalToPositionAhead Value", err)
 					}
 
-					currentDriver.TimeDiffToPositionAhead = t
+					currentDriver.TimeDiffToPositionAhead = t.Milliseconds()
 				}
 
 			}
@@ -154,7 +155,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 						}
 					}
 
-					currentDriver.TimeDiffToPositionAhead = t
+					currentDriver.TimeDiffToPositionAhead = t.Milliseconds()
 				}
 
 				value, exists = diff.(map[string]interface{})["TimeDiffToFastest"].(string)
@@ -168,7 +169,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 						}
 					}
 
-					currentDriver.TimeDiffToFastest = t
+					currentDriver.TimeDiffToFastest = t.Milliseconds()
 				}
 			}
 		}
@@ -230,7 +231,6 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 				}
 
 			case []interface{}:
-
 				for key, value2 := range sectors.([]interface{}) {
 					p.processSectorTimes(string(key), value2, &currentDriver, timestamp)
 				}
@@ -286,7 +286,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 					}
 				}
 
-				currentDriver.FastestLap = t
+				currentDriver.FastestLap = t.Milliseconds()
 			}
 
 			//lapTime, exists := bestLapTime["_deleted"]
@@ -304,7 +304,7 @@ func (p *Parser) parseTimingData(dat map[string]interface{}, timestamp time.Time
 					p.ParseTimeError(connection.TimingDataFile, timestamp, "LastLapTime Value", err)
 				}
 
-				currentDriver.LastLap = t
+				currentDriver.LastLap = t.Milliseconds()
 			}
 
 			overallFastest, exists := lastLapTime["OverallFastest"]
@@ -448,13 +448,13 @@ func (p *Parser) processSectorTimes(key string, value interface{}, driver *Messa
 
 		switch key {
 		case "0":
-			driver.Sector1 = sectorTime
+			driver.Sector1 = sectorTime.Milliseconds()
 
 		case "1":
-			driver.Sector2 = sectorTime
+			driver.Sector2 = sectorTime.Milliseconds()
 
 		case "2":
-			driver.Sector3 = sectorTime
+			driver.Sector3 = sectorTime.Milliseconds()
 
 			if p.eventState.TrackStatus == Messages.ChequeredFlag {
 				driver.ChequeredFlag = true
