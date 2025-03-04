@@ -17,9 +17,10 @@ package flowControl
 
 import (
 	"context"
-	"github.com/f1gopher/f1gopherlib/Messages"
 	"sync"
 	"time"
+
+	"github.com/f1gopher/f1gopherlib/Messages"
 )
 
 type realtime struct {
@@ -53,7 +54,7 @@ type realtime struct {
 	currentTime   time.Time
 	currentLap    int
 	currentStatus Messages.SessionState
-	remainingTime time.Duration
+	remainingTime int64
 	clockStopped  bool
 
 	incrementLapCount int
@@ -290,7 +291,7 @@ func (f *realtime) Run() {
 				}
 
 				if !f.sessionStart.IsZero() && !f.clockStopped {
-					f.remainingTime = f.sessionLength - f.currentTime.Sub(f.sessionStart)
+					f.remainingTime = (f.sessionLength - f.currentTime.Sub(f.sessionStart)).Milliseconds()
 
 					// Things keep happening after the time has run out so just stop at 0
 					if f.remainingTime < 0 {

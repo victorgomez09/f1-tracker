@@ -6,7 +6,7 @@ import Navbar from "./components/navbar/Navbar.vue";
   <div class="flex flex-col overflow w-full h-full">
     <Navbar />
 
-    <div class="flex h-full w-full">
+    <div class="flex p-2 h-full w-full">
       <router-view></router-view>
       <!--<router-view
       v-if="connected && dataUpdated"

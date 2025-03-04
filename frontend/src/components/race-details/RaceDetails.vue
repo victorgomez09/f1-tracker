@@ -1,267 +1,163 @@
 <script setup lang="ts">
-import { PropType, computed, ref, watchEffect } from "vue";
-import moment from "moment";
+import { Drs, SafeftyCar, Session, Status } from '@/models/session.model'
+import { useEventStore, useInformationStore, useTimeStore } from '@/store/data.store'
+import momentTz from 'moment-timezone'
+import { Button } from '@/components/ui/button'
 
-import { F1Session } from "../../models/session.model";
-import { F1ExtrapolatedClock } from "../../models/clock.model";
-import { getTrackStatusMessage } from "../../utils/track.util";
-import { F1TrackStatus } from "../../models/track-status.model";
-import { F1WeatherData } from "../../models/weather";
-import { getWindDirection } from "../../utils/wind.util";
-import { F1Laps } from "../../models/laps.model";
+// const ws = getWs()
 
-const props = defineProps({
-  session: Object as PropType<F1Session>,
-  extrapolatedClock: Object as PropType<F1ExtrapolatedClock>,
-  trackStatus: Object as PropType<F1TrackStatus>,
-  weather: Object as PropType<F1WeatherData>,
-  laps: Object as PropType<F1Laps>,
-});
+const {isReplay, ws} = defineProps({
+  isReplay: Boolean,
+  ws: WebSocket
+})
 
-const countryFlag = ref();
-watchEffect(async () => {
-  countryFlag.value = (
-    await import(
-      /* @vite-ignore */ `../../assets/country-flags/${props.session?.countryCode.toLowerCase()}.svg`
-    )
-  ).default;
-});
-const timeRemaining = computed(() => {
-  return !!props.extrapolatedClock && !!props.extrapolatedClock?.remaining
-    ? props.extrapolatedClock.extrapolating
-      ? moment
-          .utc(
-            moment
-              .duration(props.extrapolatedClock.remaining)
-              .subtract(
-                moment.utc().diff(moment.utc(props.extrapolatedClock.utc))
-              )
-              // .asMilliseconds() + (delay ? delay * 1000 : 0),
-              .asMilliseconds()
-          )
-          .format("HH:mm:ss")
-      : props.extrapolatedClock.remaining
-    : undefined;
-});
-const trackStatusInfo = computed(() => {
-  return getTrackStatusMessage(props.trackStatus?.status);
-});
-const windDirection = computed(() => {
-  return getWindDirection(props.weather?.wind_direction!);
-});
+const parseEventType = (eventType: number) => {
+  return Session[eventType]
+}
+
+const parseStatus = (status: number) => {
+  switch (status) {
+    case Status.UnknownState:
+      return "Unknown";
+    case Status.Inactive:
+      return "Inactive";
+    case Status.Started:
+      return "Started";
+    case Status.Aborted:
+      return "Aborted";
+    case Status.Finished:
+      return "Finished";
+    case Status.Finalised:
+      return "Finalised";
+    case Status.Ended:
+      return "Ended";
+  }
+}
+
+const parseStatusColor = (status: number) => {
+  switch (status) {
+    case Status.UnknownState:
+    case Status.Inactive:
+    case Status.Finished:
+    case Status.Finalised:  
+    case Status.Ended:
+      return "text-white";
+    case Status.Started:
+      return "text-green-500";
+    case Status.Aborted:
+      return "text-red-500"
+  }
+}
+
+const parseDrs = (drs: number) => {
+  switch (drs) {
+    case Drs.DRSUnknown:
+      return "Unknown"
+    case Drs.DRSEnabled:
+      return "Enabled"
+    case Drs.DRSDisabled:
+      return "Disabled"
+  }
+}
+
+const parseSafeftyCar = (safetyCar: number) => {
+  switch (safetyCar) {
+    case SafeftyCar.Clear:
+      return "Clear";
+    case SafeftyCar.VirtualSafetyCar:
+      return "VSC Deployed";
+    case SafeftyCar.VirtualSafetyCarEnding:
+      return "VSC Ending"
+    case SafeftyCar.SafetyCar:
+      return "Deployed"
+    case SafeftyCar.SafetyCarEnding:
+      return "Ending"
+  }
+}
+
+const parseSafeftyCarColor = (safetyCar: number) => {
+  switch (safetyCar) {
+    case SafeftyCar.VirtualSafetyCar:
+    case SafeftyCar.VirtualSafetyCarEnding:
+      return "text-yellow-500";
+    case SafeftyCar.SafetyCar:
+    case SafeftyCar.SafetyCarEnding:
+      return "text-red-500"
+    default:
+      return "text-green-500"
+  }
+}
+
+const parseRemainingTime = (remaininTime: number) => {
+	// hour := int(w.remainingTime.Seconds() / 3600)
+	// minute := int(w.remainingTime.Seconds()/60) % 60
+	// second := int(w.remainingTime.Seconds()) % 60
+  const time = remaininTime / 1000
+  console.log('time', time)
+  const hours = time / 3600
+  console.log('hours', hours)
+  const minutes = (time / 60) % 60
+  const seconds = time % 60
+
+  return `${hours}:${minutes}:${seconds}`
+}
+
+const goToStart = async () => {
+  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+    headers: {
+      'Content-type': 'application/json'
+    },
+    method: 'POST',
+    body: JSON.stringify({skipToStart: true})
+  })
+}
+const skip5Secs = async () => {
+  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+    headers: {
+      'Content-type': 'application/json'
+    },
+    method: 'POST',
+    body: JSON.stringify({skip5Secs: true})
+  })
+}
+const skipMinute = async () => {
+  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+    headers: {
+      'Content-type': 'application/json'
+    },
+    method: 'POST',
+    body: JSON.stringify({skipMinute: true})
+  })
+}
 </script>
 
 <template>
-  <div class="w-full">
-    <div class="flex items-center self-start gap-2 p-2">
-      <img
-        class="relative overflow-hidden rounded h-6 w-12"
-        :src="countryFlag"
-        alt="Country flag"
-      />
+  <div class="flex items-center gap-2" v-if="useInformationStore.information.CircuitTimezone">
+    <!-- Name -->
+    <span>{{ useEventStore.event.Name }}: {{ parseEventType(useEventStore.event.Type) }}</span>
 
-      <div class="flex items-center gap-6 w-full">
-        <p>
-          <span class="font-semibold">{{ props.session?.officialName }}</span>
-          , {{ session?.location }}, {{ session?.countryName }}
-        </p>
+    <!-- Track time -->
+    <!-- <span>- Track time: {{ momentTz(useTimeStore.time.Timestamp).tz(useInformationStore.information.CircuitTimezone).format("YYYY-MM-DD hh:mm:ss") }}</span> -->
+    <span>- Track time: {{ momentTz(useTimeStore.time.Timestamp).tz(useInformationStore.information.CircuitTimezone).format("YYYY-MM-DD hh:mm:ss") }}</span>
 
-        <p><span class="font-semibold">Session:</span> {{ session?.type }}</p>
-        <p v-if="!laps">
-          <span class="font-semibold">Remaining:</span> {{ timeRemaining }}
-        </p>
-        <p v-else>
-          <span class="font-semibold">Laps:</span> {{ laps.current }} /
-          {{ laps.total }}
-        </p>
+    <!-- Track status -->
+    <span>- Track status: <span :class="parseStatusColor(useEventStore.event.Status)">{{ parseStatus(useEventStore.event.Status) }}</span></span>
 
-        <!-- <span class="badge badge-lg" :class="trackStatusInfo?.color">
-          {{ trackStatusInfo?.message }}
-        </span> -->
+    <!-- DRS enabled -->
+    <span>- DRS enabled: {{ parseDrs(useEventStore.event.DRSEnabled) }}</span>
 
-        <div class="flex items-center gap-2 ml-auto">
-          {{ trackStatusInfo }}
-          <div
-            class="size-2 rounded"
-            :class="{ 'bg-sucess': trackStatusInfo?.message === 'Track Clear' }"
-          ></div>
-        </div>
+    <!-- Safefty car -->
+    <span>- Safefty car: <span :class="parseSafeftyCarColor(useEventStore.event.Status)">{{ parseSafeftyCar(useEventStore.event.SafetyCar) }}</span></span>
 
-        <!-- <div class="flex items-center gap-2 ml-auto">
-          <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn m-1">
-              Theme
-              <svg
-                width="12px"
-                height="12px"
-                class="h-2 w-2 fill-current opacity-60 inline-block"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 2048 2048"
-              >
-                <path
-                  d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"
-                ></path>
-              </svg>
-            </div>
-            <ul
-              tabindex="0"
-              class="dropdown-content z-[2] p-2 shadow-2xl bg-base-300 rounded-box w-52"
-            >
-              <li>
-                <input
-                  type="radio"
-                  name="theme-dropdown"
-                  class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                  aria-label="Default"
-                  value="default"
-                />
-              </li>
-              <li>
-                <input
-                  type="radio"
-                  name="theme-dropdown"
-                  class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                  aria-label="Retro"
-                  value="retro"
-                />
-              </li>
-              <li>
-                <input
-                  type="radio"
-                  name="theme-dropdown"
-                  class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                  aria-label="Cyberpunk"
-                  value="cyberpunk"
-                />
-              </li>
-              <li>
-                <input
-                  type="radio"
-                  name="theme-dropdown"
-                  class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                  aria-label="Valentine"
-                  value="valentine"
-                />
-              </li>
-              <li>
-                <input
-                  type="radio"
-                  name="theme-dropdown"
-                  class="theme-controller btn btn-sm btn-block btn-ghost justify-start"
-                  aria-label="Aqua"
-                  value="aqua"
-                />
-              </li>
-            </ul>
-          </div>
-        </div> -->
-      </div>
+    <!-- Current lap -->
+    <span v-if="useEventStore.event.Type === Session.Race">- Laps: {{ useEventStore.event.CurrentLap }} / {{ useEventStore.event.TotalLaps }}</span>
+    <span>- Remaining: {{ parseRemainingTime(useTimeStore.time.Remaining) }}</span>
+
+    <div v-if="isReplay" class="flex items-center gap-2">
+      <Button size="xs" v-on:click="skip5Secs()">Skip 5 seconds</Button>
+      <Button size="xs" v-on:click="skipMinute()">Skip minute</Button>
+      <Button size="xs" v-on:click="goToStart()">Skip to start</Button>
+      <Button size="xs">Pause</Button>
     </div>
-
-    <div class="divider m-0 h-0"></div>
-
-    <div class="flex items-center gap-4 p-2 text-sm">
-      <h2 class="font-semibold">WEATHER</h2>
-
-      <p>Wind speed: {{ props.weather?.wind_speed }} km/h</p>
-
-      <p class="flex items-center">
-        Wind dir: {{ windDirection }}
-        <img
-          class="text-base-content"
-          src="../../assets/icons/arrow-up.svg"
-          alt="arrow"
-          :style="[
-            { rotate: `${props.weather?.wind_direction}deg` },
-            { transition: '1s linear' },
-          ]"
-        />
-      </p>
-
-      <p>Air temp: {{ props.weather?.air_temp }}ºC</p>
-      <p>Track temp: {{ props.weather?.track_temp }}ºC</p>
-      <p>Wind: {{ props.weather?.track_temp }}ºC</p>
-      <p>Humidity: {{ props.weather?.humidity }}%</p>
-      <p>Pressure: {{ props.weather?.pressure }} mb</p>
-      <p>Rainfall: {{ props.weather?.rainfall }}%</p>
-    </div>
-
-    <div class="divider m-0 h-0"></div>
   </div>
-
-  <!-- <div class="flex items-center gap-2 border-b border-b-primary p-4 w-full">
-    <div class="flex flex-col gap-2">
-      <div class="flex flex-col md:flex-row items-center gap-2">
-        <div class="flex items-center self-start gap-2">
-          <img class="relative overflow-hidden rounded h-8 lg:h-12 w-12 lg:w-16" :src="countryFlag" alt="Country flag" />
-  
-          <div class="flex flex-col">
-            <span class="font-semibold">{{ props.session?.name }}: {{ props.session?.type }}</span>
-            <div class="flex items-center gap-2">
-              <span class="lg:text-3xl font-bold" v-if="!laps">{{ timeRemaining }}</span>
-              <span class="lg:text-3xl font-bold" v-if="laps">
-                {{ laps.current }} / {{ laps.total }}
-              </span>
-  
-              <span class="badge badge-lg" :class="trackStatusInfo?.color">{{
-                trackStatusInfo?.message
-                }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="divider lg:hidden"></div>
-
-        <div class="flex items-center gap-4 lg:ml-4">
-          <div class="flex flex-col">
-            <span class="font-semibold">Wind speed</span>
-            <span class="lg:text-xl font-bold">
-              {{ props.weather?.wind_speed }} km/h
-            </span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Wind dir</span>
-            <span class="flex items-center lg:text-xl font-bold">
-              {{ windDirection }}
-              <img class="text-base-content" src="../../assets/icons/arrow-up.svg" alt="arrow" :style="[
-                    { rotate: `${props.weather?.wind_direction}deg` },
-                    { transition: '1s linear' },
-                  ]" />
-            </span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Air temp</span>
-            <span class="lg:text-xl font-bold">{{ props.weather?.air_temp }}ºC</span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Track temp</span>
-            <span class="lg:text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Wind</span>
-            <span class="lg:text-xl font-bold">{{ props.weather?.track_temp }}ºC</span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Humidity</span>
-            <span class="lg:text-xl font-bold">{{ props.weather?.humidity }}%</span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Pressure</span>
-            <span class="lg:text-xl font-bold">{{ props.weather?.pressure }} mb</span>
-          </div>
-
-          <div class="flex flex-col">
-            <span class="font-semibold">Rainfall</span>
-            <span class="lg:text-xl font-bold">{{ props.weather?.rainfall }}%</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div> -->
 </template>

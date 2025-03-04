@@ -17,6 +17,15 @@ const router = createRouter({
       path: "/telemetry",
       component: () => import("../views/Telemetry.vue"),
     },
+    {
+      path: "/historical",
+      component: () => import("../views/Historical.vue"),
+    },
+    {
+      path: "/historical/:eventName",
+      name: 'historical',
+      component: () => import("../views/HistoricalDashboard.vue"),
+    },
   ], // short for `routes: routes`
 });
 

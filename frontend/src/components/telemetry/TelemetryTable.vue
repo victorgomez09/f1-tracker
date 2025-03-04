@@ -249,11 +249,11 @@ const getPilanePosition = (driver: Driver) => {
 <template>
   <div class="flex flex-col flex-1 w-full">
     <div class="flex w-full">
-      <div className="grid items-center gap-2 p-1 px-2 text-sm font-medium text-zinc-500 w-full" :style="{
+      <div class="grid items-center gap-2 p-1 px-2 text-sm font-medium text-zinc-500 w-full" :style="{
         gridTemplateColumns:
-          useSessionStore.session === Session.RaceSession
-            ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-            : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+          useSessionStore.session === Session.Race
+            ? '5.5rem 22rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+            : '5rem 43rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
       }">
         <p>Position</p>
         <p>Micro-sectors</p>
@@ -264,27 +264,27 @@ const getPilanePosition = (driver: Driver) => {
         <p>S3</p>
         <p>Last lap</p>
         <p>DRS</p>
-        <p>Tire / Laps</p>
+        <p>Tire</p>
+        <p>Laps</p>
         <p>Pits</p>
-        <p v-if="useSessionStore.session === Session.RaceSession">
-          Last pit stop
+        <p v-if="useSessionStore.session === Session.Race">
+          Pit time
         </p>
-        <p v-if="useSessionStore.session === Session.RaceSession">
-          Pit position
+        <p v-if="useSessionStore.session === Session.Race">
+          Pit pos
         </p>
-        <p>Telemetry</p>
-        <p>Speed trap</p>
+        <p>Spd trp</p>
         <p>Location</p>
       </div>
     </div>
 
     <div class="flex flex-col">
-      <div v-for="driver in sorted" class="flex select-none flex-col gap-1 p-1.5 border-b">
+      <div v-for="driver in sorted" class="flex select-none flex-col gap-1 p-1 border-b">
         <div class="grid items-center gap-2 w-full" :style="{
           gridTemplateColumns:
-            useSessionStore.session === Session.RaceSession
-              ? '5.5rem 100rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-              : '5rem 42rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+            useSessionStore.session === Session.Race
+              ? '5.5rem 22rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+              : '5rem 43rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
         }">
           <!-- POSITION -->
           <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
@@ -293,11 +293,10 @@ const getPilanePosition = (driver: Driver) => {
           </span>
 
           <!-- MICRO-SECTORS -->
-          <div class="flex gap-2">
+          <div class="flex items-center">
             <!-- {{ driver.Segment }} -->
-            <div v-for="(status, index) in driver.Segment" class="flex items-center gap-2">
-              <div class="border" :class="getMinisectorColor(status)"
-                :style="{ height: '10px', width: '8px', borderRadius: '3.2px' }"></div>
+            <div v-for="(status, index) in driver.Segment" class="flex items-center">
+              <div class="border size-2" :class="getMinisectorColor(status)"></div>
               <div v-if="
                 index == useEventStore.event.Sector1Segments - 1 ||
                 index ==
@@ -375,7 +374,12 @@ const getPilanePosition = (driver: Driver) => {
           <!-- Tire / Laps -->
           <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
             :class="parseTireColor(driver.Tire)">
-            {{ parseTireType(driver.Tire) }} / {{ driver.LapsOnTire }}
+            {{ parseTireType(driver.Tire) }}
+          </span>
+
+          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+            :class="parseTireColor(driver.Tire)">
+            {{ driver.LapsOnTire }}
           </span>
 
           <!-- Pits -->
@@ -385,71 +389,53 @@ const getPilanePosition = (driver: Driver) => {
 
           <!-- Last pit stop time -->
           <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            v-if="useSessionStore.session === Session.RaceSession">
+            v-if="useSessionStore.session === Session.Race">
             {{ parseLastPitTime(driver.PitStopTimes) }}
           </span>
 
           <!-- Pit position -->
           <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="getPilanePosition(driver).positionColor" v-if="useSessionStore.session === Session.RaceSession">
+            :class="getPilanePosition(driver).positionColor" v-if="useSessionStore.session === Session.Race">
             {{ getPilanePosition(driver).potentialPositionChange }}
           </span>
 
           <!-- Telemetry -->
-          <div className="flex flex-col items-center gap-2 place-self-start">
-            <p className="flex h-8 w-8 items-center justify-center font-mono text-lg">
-              {{ getDriverTelemetry(driver)?.Gear }}
-            </p>
-
-            <div>
-              <p className="text-right font-mono font-medium leading-none">
-                {{ getDriverTelemetry(driver)?.Speed }}
+          <!-- <div class="flex items-center gap-2">
+              <p class="flex h-8 w-8 items-center justify-center font-mono text-lg">
+                {{ getDriverTelemetry(driver)?.Gear }}
               </p>
-              <p className="text-sm leading-none text-zinc-600">KM/h</p>
+              
+              <div class="flex items-center gap-2">
+                <p class="text-right font-mono font-medium leading-none">
+                  {{ getDriverTelemetry(driver)?.Speed }}
+                </p>
+                <p class="text-sm leading-none text-zinc-600">KM/h</p>
+              </div>
             </div>
 
-            <div className="flex flex-col">
-              <div className="flex flex-col gap-1">
-                <!-- <DriverPedals
-                  className="bg-red-500"
-                  value="{carData[5]}"
-                  maxValue="{1}"
-                />
-                <DriverPedals
-                  className="bg-emerald-500"
-                  value="{carData[4]}"
-                  maxValue="{100}"
-                />
-                <DriverPedals
-                  className="bg-blue-500"
-                  value="{carData[0]}"
-                  maxValue="{15000}"
-                  /> -->
-                <!-- Throttle -->
-                <div className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
+            <div class="flex flex-col">
+              <div class="flex flex-col gap-1">
+                <div class="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
                   <div class="h-1.5 bg-green-500" :style="{
                     width: `${getDriverTelemetry(driver)?.Throttle || 0 / 100
                       }%`,
                   }" :animate="{ transitionDuration: '0.1s' }" layout></div>
                 </div>
-                <!-- Brake -->
-                <div className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
+
+                <div class="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
                   <div class="h-1.5 bg-red-500" :style="{
                     width: `${getDriverTelemetry(driver)?.Brake || 0 / 100}%`,
                   }" :animate="{ transitionDuration: '0.1s' }" layout></div>
                 </div>
-                <!-- RPM -->
-                {{ getDriverTelemetry(driver)?.RPM || 0 / 15000 }}
-                {{ (getDriverTelemetry(driver)?.RPM || 0 / 15000) * 100 }}
-                <div className="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
+
+                <div class="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
                   <div class="h-1.5 bg-blue-500" :style="{
-                    width: `${getDriverTelemetry(driver)?.RPM || 0 / 15000}%`,
+                    width: `${((getDriverTelemetry(driver)?.RPM || 0)/ 15000) * 100}%`,
                   }" :animate="{ transitionDuration: '0.1s' }" layout></div>
                 </div>
               </div>
             </div>
-          </div>
-          <!-- {{ getDriverTelemetry(driver)?.Throttle }} -->
+          </div> -->
 
           <!-- Speed trap -->
           <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">

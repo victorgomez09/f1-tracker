@@ -17,9 +17,10 @@ package sessionUI
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/f1gopher/f1gopherlib/Messages"
-	"time"
 )
 
 type raceUI struct {
@@ -180,9 +181,11 @@ func (m *raceUI) uiDisplay(segmentCount int, remaining string, v []Messages.Timi
 
 func (m *raceUI) htmlDisplay(segmentCount int, remaining string, v []Messages.Timing) (table string, separator string) {
 
+	fmt.Println("remaining", remaining)
 	separator = "---------------------------------------------------------------------------------------------------------------------------------------------"
 
-	title := fmt.Sprintf("%s: %v, Track Time: %v, Status: %s, DRS: %v, Safety Car: %s, Lap: %d/%d, Remaining: %s %s\n",
+	title := fmt.Sprintf("%v ---- %s: %v, Track Time: %v, Status: %s, DRS: %v, Safety Car: %s, Lap: %d/%d, Remaining: %s %s\n",
+		m.f.CircuitTimezone(),
 		m.f.Name(),
 		m.event.Type.String(),
 		m.eventTime.In(m.f.CircuitTimezone()).Format("2006-01-02 15:04:05"),

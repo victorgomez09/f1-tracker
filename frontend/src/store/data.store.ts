@@ -1,19 +1,32 @@
 import { Driver } from "@/models/driver.model";
 import { Telemetry } from "@/models/telemetry.model";
 import { set } from "@vueuse/core";
-import { reactive, ref } from "vue";
+import { reactive } from "vue";
 
-import { F1 } from "../models/f1.model";
 import { Event } from "@/models/event.model";
 import { General } from "@/models/general.model";
-
-export const dashboardData = ref<F1>({} as F1);
+import { Information } from "@/models/information.model";
+import { Time } from "@/models/time.model";
 
 export const useDriverStore = reactive({
   drivers: [] as Driver[],
   increment(item: Driver) {
     const i = this.drivers.findIndex((e) => e.Number === item.Number);
     set(this.drivers, i, item);
+  },
+});
+
+export const useTimeStore = reactive({
+  time: {} as Time,
+  addTime(item: Time) {
+    this.time = item;
+  },
+});
+
+export const useInformationStore = reactive({
+  information: {} as Information,
+  addInformation(item: string) {
+    this.information.CircuitTimezone = item
   },
 });
 

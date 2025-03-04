@@ -40,74 +40,73 @@ import { computed, h, onMounted, ref } from 'vue'
 import moment from 'moment'
 import DriverTag from '@/components/driver/DriverTag.vue'
 
-const socket = ref();
-const retry = ref();
+// const socket = ref();
+// const retry = ref();
 
-const delayMs = ref(0);
-const connected = ref(false);
-const blocking = ref(false);
+// const delayMs = ref(0);
+// const connected = ref(false);
+// const blocking = ref(false);
 
-const dataUpdated = ref(false);
+// const dataUpdated = ref(false);
 
-const initWebsocket = (handleMessage: any) => {
-  if (retry.value) {
-    clearTimeout(retry.value);
-    retry.value = undefined;
-  }
+// const initWebsocket = (handleMessage: any) => {
+//   if (retry.value) {
+//     clearTimeout(retry.value);
+//     retry.value = undefined;
+//   }
 
-  const wsUrl = "ws://localhost:3001";
+//   const wsUrl = "ws://localhost:3001";
 
-  const ws = new WebSocket(wsUrl);
+//   const ws = new WebSocket(wsUrl);
 
-  ws.addEventListener("open", () => {
-    connected.value = true;
-  });
+//   ws.addEventListener("open", () => {
+//     connected.value = true;
+//   });
 
-  ws.addEventListener("close", () => {
-    connected.value = false;
-    blocking.value = true;
-    () => {
-      if (!retry.value && !blocking.value)
-        retry.value = window.setTimeout(() => {
-          initWebsocket(handleMessage);
-        }, 1000);
-    };
-  });
+//   ws.addEventListener("close", () => {
+//     connected.value = false;
+//     blocking.value = true;
+//     () => {
+//       if (!retry.value && !blocking.value)
+//         retry.value = window.setTimeout(() => {
+//           initWebsocket(handleMessage);
+//         }, 1000);
+//     };
+//   });
 
-  ws.addEventListener("error", () => {
-    ws.close();
-  });
+//   ws.addEventListener("error", () => {
+//     ws.close();
+//   });
 
-  ws.addEventListener("message", ({ data }) => {
-    setTimeout(() => {
-      handleMessage(data);
-      console.log("message", data);
-    }, delayMs.value);
-  });
+//   ws.addEventListener("message", ({ data }) => {
+//     setTimeout(() => {
+//       handleMessage(data);
+//       console.log("message", data);
+//     }, delayMs.value);
+//   });
 
-  socket.value = ws;
-};
+//   socket.value = ws;
+// };
 
-onMounted(() => {
-  const ws = new WebSocket(
-    "ws://localhost:3000/ws"
-  );
+// onMounted(() => {
+//   const ws = new WebSocket(
+//     "ws://localhost:3000/ws"
+//   );
 
-  ws.addEventListener("open", () => {
-    console.log("open");
-    connected.value = true;
-  });
+//   ws.addEventListener("open", () => {
+//     console.log("open");
+//     connected.value = true;
+//   });
 
-  ws.onmessage = (data) => {
-    try {
-      parseData(JSON.parse(data.data));
-      dataUpdated.value = true;
-    } catch (e) {
-      console.error(`could not process message: ${e}`);
-    }
-  };
-});
-
+//   ws.onmessage = (data) => {
+//     try {
+//       parseData(JSON.parse(data.data));
+//       dataUpdated.value = true;
+//     } catch (e) {
+//       console.error(`could not process message: ${e}`);
+//     }
+//   };
+// });
 
 const columns: ColumnDef<Driver>[] = [
   {
@@ -123,7 +122,7 @@ const columns: ColumnDef<Driver>[] = [
   {
     accessorKey: 'Segments',
     header: 'Sectors',
-    cell: ({ row }) => h('div', { class: 'capitalize' }, row.getValue('Segments')),
+    cell: ({ row }) => h('div', { class: 'max-w-[20em]' }, row.getValue('Segments')),
   },
   {
     accessorKey: 'S1',
@@ -193,8 +192,10 @@ const columnVisibility = ref<VisibilityState>({})
 const rowSelection = ref({})
 const expanded = ref<ExpandedState>({})
 
-const sorted = computed(() =>
-  useDriverStore.drivers.sort((a, b) => a.Position - b.Position)
+const sorted = computed(() => {
+console.log("sorted", useDriverStore.drivers)
+  return useDriverStore.drivers.sort((a, b) => a.Position - b.Position)
+}
 );
 
 const table = useVueTable({
@@ -452,9 +453,6 @@ const getPilanePosition = (driver: Driver) => {
 <template>
   <div class="w-full">
     <div class="flex gap-2 items-center py-4">
-      <!-- <Button @click="randomize">
-        Randomize
-      </Button> -->
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button variant="outline" class="ml-auto">

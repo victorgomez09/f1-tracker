@@ -21,8 +21,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/f1gopher/f1gopherlib/Messages"
-	"github.com/f1gopher/f1gopherlib/f1log"
 	"io"
 	"net/http"
 	"os"
@@ -30,6 +28,9 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/f1gopher/f1gopherlib/Messages"
+	"github.com/f1gopher/f1gopherlib/f1log"
 )
 
 type fileInfo struct {
@@ -125,6 +126,7 @@ func (r *replay) JumpToStart() time.Time {
 	defer r.currentTimeLock.Unlock()
 
 	r.currentTime = r.raceStartTime
+	fmt.Println("r.currentTime", r.currentTime)
 	// Clear this so we can only do it once and not travel back in time if requested multiple times
 	r.raceStartTime = time.Time{}
 
@@ -155,6 +157,7 @@ func (r *replay) readEntries() {
 			r.dataFiles[x].data.Scan()
 			line := r.dataFiles[x].data.Text()
 
+			fmt.Println("dataStartTime", dataStartTime)
 			r.dataFiles[x].nextLineTime, r.dataFiles[x].nextLine, err = r.uncompressedDataTime(line, dataStartTime)
 			if err != nil {
 				continue

@@ -16,8 +16,9 @@
 package flowControl
 
 import (
-	"github.com/f1gopher/f1gopherlib/Messages"
 	"time"
+
+	"github.com/f1gopher/f1gopherlib/Messages"
 )
 
 type straightThrough struct {
@@ -76,7 +77,9 @@ func (f *straightThrough) IncrementLap() {}
 
 func (f *straightThrough) IncrementTime(duration time.Duration) {}
 
-func (f *straightThrough) SkipToSessionStart(start time.Time) {}
+func (f *straightThrough) SkipToSessionStart(start time.Time) {
+	// f.skipToTime = start
+}
 
 func (f *straightThrough) TogglePause() {
 	f.isPaused = !f.isPaused

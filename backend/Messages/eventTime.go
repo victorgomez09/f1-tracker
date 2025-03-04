@@ -22,5 +22,5 @@ import (
 type EventTime struct {
 	Timestamp time.Time
 
-	Remaining time.Duration
+	Remaining int64
 }

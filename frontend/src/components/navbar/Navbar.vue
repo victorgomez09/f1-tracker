@@ -20,6 +20,7 @@ import { ChevronsDown, Menu } from "lucide-vue-next";
 import { ref } from "vue";
 
 import ToggleTheme from "./ToggleTheme.vue";
+import { RouterLink } from "vue-router";
 
 interface RouteProps {
   href: string;
@@ -30,6 +31,10 @@ const routeList: RouteProps[] = [
   {
     href: "dashboard",
     label: "Dashboard",
+  },
+  {
+    href: "historical",
+    label: "Historical",
   },
 ];
 
@@ -70,9 +75,9 @@ const isOpen = ref<boolean>(false);
             <div class="flex flex-col gap-2">
               <Button v-for="{ href, label } in routeList" :key="label" as-child variant="ghost"
                 class="justify-start text-base">
-                <a @click="isOpen = false" :href="href">
+                <RouterLink :to="href">
                   {{ label }}
-                </a>
+                </RouterLink>
               </Button>
             </div>
           </div>

@@ -17,11 +17,9 @@ import { Button } from '@/components/ui/button';
           <Button>Go to Dashboard</Button>
         </RouterLink>
 
-        <!-- <RouterLink to="/schedule">
-          <Button>
-            Check Schedule
-          </Button>
-        </RouterLink> -->
+        <RouterLink to="/historical">
+          <Button variant="outline">Historical races</Button>
+        </RouterLink>
       </div>
     </section>
   </div>

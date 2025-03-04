@@ -545,6 +545,7 @@ func (f *f1gopherlib) IncrementTime(duration time.Duration) {
 
 func (f *f1gopherlib) SkipToSessionStart() {
 	sessionStart := f.connection.JumpToStart()
+	fmt.Println("sessionStart", sessionStart)
 	if !sessionStart.IsZero() {
 		f.replayTiming.SkipToSessionStart(sessionStart)
 	}

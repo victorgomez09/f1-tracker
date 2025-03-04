@@ -2,7 +2,6 @@
 import { computed, isProxy, onMounted, ref, toRaw } from "vue";
 
 import mockData from "../../example_data.json";
-import { dashboardData } from "../store/data.store";
 import { viewMode } from "../store/viewMode.store";
 import { sortPos } from "../utils/position.utils";
 import { sortUtc } from "../utils/time.util";
@@ -130,39 +129,39 @@ onMounted(() => {
   };
 });
 
-const dataProxy = isProxy(dashboardData)
-  ? toRaw(dashboardData)
-  : dashboardData.value;
-console.log("dataProxy", dataProxy);
-const data =
-  dataProxy == null ||
-    dataProxy === undefined ||
-    Object.keys(dataProxy).length === 0
-    ? JSON.parse(mockData)
-    : dataProxy;
-const { session } = data;
-const { trackStatus } = data;
-const { weather } = data;
-const { extrapolatedClock } = data;
-const { drivers } = data;
-const { raceControlMessages } = data;
-const { positionBatches } = data;
-const { teamRadios } = data;
-const { lapCount } = data;
-const { carData } = data;
+// const dataProxy = isProxy(dashboardData)
+//   ? toRaw(dashboardData)
+//   : dashboardData.value;
+// console.log("dataProxy", dataProxy);
+// const data =
+//   dataProxy == null ||
+//     dataProxy === undefined ||
+//     Object.keys(dataProxy).length === 0
+//     ? JSON.parse(mockData)
+//     : dataProxy;
+// const { session } = data;
+// const { trackStatus } = data;
+// const { weather } = data;
+// const { extrapolatedClock } = data;
+// const { drivers } = data;
+// const { raceControlMessages } = data;
+// const { positionBatches } = data;
+// const { teamRadios } = data;
+// const { lapCount } = data;
+// const { carData } = data;
 
-const liveTimingViewOption = ref<boolean>(false);
-const checkChange = (element: any) => {
-  viewMode.value = element.target.checked ? "TELEMETRY" : "PRETTY";
-};
+// const liveTimingViewOption = ref<boolean>(false);
+// const checkChange = (element: any) => {
+//   viewMode.value = element.target.checked ? "TELEMETRY" : "PRETTY";
+// };
 
-const driversSorted = computed(() => {
-  return drivers.sort(sortPos);
-});
+// const driversSorted = computed(() => {
+//   return drivers.sort(sortPos);
+// });
 
-const radiosSorted = computed(() => {
-  return teamRadios.sort(sortUtc);
-});
+// const radiosSorted = computed(() => {
+//   return teamRadios.sort(sortUtc);
+// });
 </script>
 
 <template>

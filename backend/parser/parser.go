@@ -123,7 +123,6 @@ func (p *Parser) SelectTelemetrySources(drivers []int) {
 	}
 
 	tmp := make(map[int]bool)
-	fmt.Println("drivers", drivers)
 	for _, driver := range drivers {
 		tmp[driver] = true
 	}
