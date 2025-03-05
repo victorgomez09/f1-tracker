@@ -10,8 +10,6 @@ onMounted(() => {
 
 <template>
   <div class="flex flex-col overflow w-full h-full bg-base-300">
-    <Navbar />
-
     <div class="flex p-2 h-full w-full">
       <router-view></router-view>
       <!--<router-view

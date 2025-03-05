@@ -1,4 +1,9 @@
+<script setup lang="ts">
+import Navbar from "@/components/navbar/Navbar.vue"
+</script>
+
 <template>
+  <Navbar />
   <div className="container mx-auto max-w-screen-lg px-4">
     <section className="flex h-full w-full flex-col items-center pt-20 sm:justify-center sm:pt-0">
       <!-- <Image src={icon} alt="f1-dash tag logo" width={200} /> -->
