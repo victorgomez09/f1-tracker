@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import moment from "moment";
 import { computed } from "vue";
 
+import { Driver, DriverLocation, PitStop } from "@/models/driver.model";
+import { HistoricalSession, Session } from "@/models/session.model";
 import {
   useDriverStore,
   useEventStore,
   useGeneralStore,
   useSessionStore,
+  useTelemetryStore,
 } from "@/store/data.store";
-import { useTelemetryStore } from "@/store/data.store";
-import { Driver, DriverLocation, PitStop } from "@/models/driver.model";
-import { HistoricalSession, Session } from "@/models/session.model";
-import moment from "moment";
 
 const sorted = computed(() =>
   useDriverStore.drivers.sort((a, b) => a.Position - b.Position)
@@ -247,56 +247,40 @@ const getPilanePosition = (driver: Driver) => {
 </script>
 
 <template>
-  <div class="flex flex-col flex-1 w-full overflow-auto">
-    <div class="flex w-full">
-      <div class="grid items-center p-1 text-sm font-medium text-zinc-500 w-full" :style="{
-        gridTemplateColumns:
-          useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession
-            ? '5.5rem 22rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-            : '5rem 10rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
-      }">
-        <p>Position</p>
-        <p>Micro-sectors</p>
-        <p>Fastest</p>
-        <p>Gap</p>
-        <p>S1</p>
-        <p>S2</p>
-        <p>S3</p>
-        <p>Last lap</p>
-        <p>DRS</p>
-        <p>Tire</p>
-        <p>Laps</p>
-        <p>Pits</p>
-        <p v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
-          Pit time
-        </p>
-        <p v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
-          Pit pos
-        </p>
-        <p>Spd trp</p>
-        <p>Location</p>
-      </div>
-    </div>
+  <div class="overflow-x-auto">
+    <table class="table table-zebra table-xs gap-2">
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Micro-sectors</th>
+          <th>Fastest</th>
+          <th>Gap</th>
+          <th>S1</th>
+          <th>S2</th>
+          <th>S3</th>
+          <th>Last lap</th>
+          <th>DRS</th>
+          <th>Tire</th>
+          <th>Laps</th>
+          <th>Pits</th>
+          <th
+            v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
+            Pit time</th>
+          <th
+            v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
+            Pit pos</th>
+          <th>Spd trp</th>
+          <th>Location</th>
+        </tr>
+      </thead>
 
-    <div class="flex flex-col">
-      <div v-for="(driver, index) in sorted" class="flex select-none flex-col gap-1 rounded-md border-b w-full"
-        :class="{ 'bg-background': index % 2 == 0 }">
-        <div class="grid items-center gap-2 w-full" :style="{
-          gridTemplateColumns:
-            useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession
-              ? '5.5rem 22rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-              : '5rem 43rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
-        }">
-          <!-- POSITION -->
-          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black"
-            :style="{ color: driver.HexColor }">
-            {{ driver.Position }} {{ driver.ShortName }}
-          </span>
-
-          <!-- MICRO-SECTORS -->
-          <div class="flex items-center">
-            <!-- {{ driver.Segment }} -->
-            <div v-for="(status, index) in driver.Segment" class="flex items-center">
+      <tbody>
+        <tr v-for="driver in sorted">
+          <!-- Position -->
+          <td :style="{ color: driver.HexColor }"> {{ driver.Position }} {{ driver.ShortName }}</td>
+          <!-- Micro sectors -->
+          <td class="flex items-center gap-0.5">
+            <div v-for="(status, index) in driver.Segment" class="flex items-center rounded-md">
               <div class="border size-2" :class="getMinisectorColor(status)"></div>
               <div v-if="
                 index == useEventStore.event.Sector1Segments - 1 ||
@@ -308,15 +292,11 @@ const getPilanePosition = (driver: Driver) => {
                 |
               </div>
             </div>
-          </div>
-
-          <!-- FASTEST LAP -->
-          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black">
-            {{ parseDuration(driver.FastestLap) }}
-          </span>
-
-          <!-- GAP -->
-          <div class="flex flex-col items-center justify-between gap-0.5 px-1 py-1">
+          </td>
+          <!-- fastest lap -->
+          <td>{{ parseDuration(driver.FastestLap) }}</td>
+          <!-- Gap -->
+          <td>
             <span class="flex items-center justify-between gap-0.5 px-1 py-1 font-semibold">
               {{ `${parseDuration(driver.TimeDiffToPositionAhead) !== '' ? '+' +
                 parseDuration(driver.TimeDiffToPositionAhead) : parseDuration(driver.TimeDiffToPositionAhead)}` }}
@@ -326,130 +306,58 @@ const getPilanePosition = (driver: Driver) => {
               {{ `${parseDuration(driver.TimeDiffToFastest) !== '' ? '+' +
                 parseDuration(driver.TimeDiffToFastest) : parseDuration(driver.TimeDiffToFastest)}` }}
             </span>
-          </div>
-
-          <!-- S1 -->
-          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+          </td>
+          <!-- s1 -->
+          <td :class="parseTimeColor(
             driver.Sector1PersonalFastest,
             driver.Sector1OverallFastest
-          )
-            ">
-            {{ parseDuration(driver.Sector1) }}
-          </span>
-
-          <!-- S2 -->
-          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+          )">{{ parseDuration(driver.Sector1) }}</td>
+          <!-- s2 -->
+          <td :class="parseTimeColor(
             driver.Sector2PersonalFastest,
             driver.Sector2OverallFastest
           )
-            ">
-            {{ parseDuration(driver.Sector2) }}
-          </span>
-
-          <!-- S3 -->
-          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+            ">{{ parseDuration(driver.Sector2) }}</td>
+          <!-- s3 -->
+          <td :class="parseTimeColor(
             driver.Sector3PersonalFastest,
             driver.Sector3OverallFastest
           )
-            ">
-            {{ parseDuration(driver.Sector3) }}
-          </span>
-
-          <!-- Last lap -->
-          <span class="flex w-fit items-center justify-between gap-0.5 px-1 py-1 font-black" :class="parseTimeColor(
+            ">{{ parseDuration(driver.Sector3) }}</td>
+          <!-- personal best -->
+          <td :class="parseTimeColor(
             driver.LastLapPersonalFastest,
             driver.LastLapOverallFastest
           )
-            ">
-            {{ parseDuration(driver.LastLap) }}
-          </span>
-
-          <!-- DRS -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black" :class="{
+            ">{{ parseDuration(driver.LastLap) }}</td>
+          <!-- drs -->
+          <td :class="{
             'text-green-500': getDriverTelemetry(driver)?.DRS,
             'text-red-500': !getDriverTelemetry(driver)?.DRS,
-          }">
-            DRS
-          </span>
-
-          <!-- Tire / Laps -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="parseTireColor(driver.Tire)">
-            {{ parseTireType(driver.Tire) }}
-          </span>
-
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="parseTireColor(driver.Tire)">
-            {{ driver.LapsOnTire }}
-          </span>
-
-          <!-- Pits -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">
-            {{ driver.Pitstops }}
-          </span>
-
-          <!-- Last pit stop time -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
+          }">DRS</td>
+          <!-- tire -->
+          <td :class="parseTireColor(driver.Tire)">{{ parseTireType(driver.Tire) }}</td>
+          <!-- tire lap -->
+          <td>{{ driver.LapsOnTire }}</td>
+          <!-- pits -->
+          <td>{{ driver.Pitstops }}</td>
+          <!-- last pit time -->
+          <td
             v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
-            {{ parseLastPitTime(driver.PitStopTimes) }}
-          </span>
+            {{ parseLastPitTime(driver.PitStopTimes) }}</td>
+          <!-- pit position -->
+          <td
+            v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession"
+            :class="getPilanePosition(driver).positionColor">
 
-          <!-- Pit position -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="getPilanePosition(driver).positionColor"
-            v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
             {{ getPilanePosition(driver).potentialPositionChange }}
-          </span>
-
-          <!-- Telemetry -->
-          <!-- <div class="flex items-center gap-2">
-              <p class="flex h-8 w-8 items-center justify-center font-mono text-lg">
-                {{ getDriverTelemetry(driver)?.Gear }}
-              </p>
-              
-              <div class="flex items-center gap-2">
-                <p class="text-right font-mono font-medium leading-none">
-                  {{ getDriverTelemetry(driver)?.Speed }}
-                </p>
-                <p class="text-sm leading-none text-zinc-600">KM/h</p>
-              </div>
-            </div>
-
-            <div class="flex flex-col">
-              <div class="flex flex-col gap-1">
-                <div class="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
-                  <div class="h-1.5 bg-green-500" :style="{
-                    width: `${getDriverTelemetry(driver)?.Throttle || 0 / 100
-                      }%`,
-                  }" :animate="{ transitionDuration: '0.1s' }" layout></div>
-                </div>
-
-                <div class="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
-                  <div class="h-1.5 bg-red-500" :style="{
-                    width: `${getDriverTelemetry(driver)?.Brake || 0 / 100}%`,
-                  }" :animate="{ transitionDuration: '0.1s' }" layout></div>
-                </div>
-
-                <div class="h-1.5 w-20 overflow-hidden rounded-xl bg-zinc-800">
-                  <div class="h-1.5 bg-blue-500" :style="{
-                    width: `${((getDriverTelemetry(driver)?.RPM || 0)/ 15000) * 100}%`,
-                  }" :animate="{ transitionDuration: '0.1s' }" layout></div>
-                </div>
-              </div>
-            </div>
-          </div> -->
-
-          <!-- Speed trap -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">
-            {{ driver.SpeedTrap }} KM/h
-          </span>
-
+          </td>
+          <!-- speed trap -->
+          <td>{{ driver.SpeedTrap }} KM/h</td>
           <!-- Location -->
-          <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black">
-            {{ getCarPosition(driver.Location) }}
-          </span>
-        </div>
-      </div>
-    </div>
+          <td>{{ getCarPosition(driver.Location) }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>

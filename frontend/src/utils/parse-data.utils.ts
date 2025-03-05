@@ -5,6 +5,7 @@ import {
   useGeneralStore,
   useInformationStore,
   usePausedStore,
+  useRaceControlStore,
   useSessionStore,
   useTelemetryStore,
   useTimeStore,
@@ -42,6 +43,10 @@ export const parseData = (data: ServerResponse) => {
 
     case "GENERAL":
       useGeneralStore.addGeneral(data.data);
+      break;
+
+    case "RACE_CONTROL":
+      useRaceControlStore.addRaceControl(data.data)
       break;
 
     default:

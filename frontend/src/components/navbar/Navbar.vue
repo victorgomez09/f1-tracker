@@ -1,113 +1,60 @@
 <script lang="ts" setup>
-import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList
-} from "@/components/ui/navigation-menu";
-import { Separator } from "@/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { useColorMode } from "@vueuse/core";
-import { ChevronsDown, Menu } from "lucide-vue-next";
-import { ref } from "vue";
-
-import ToggleTheme from "./ToggleTheme.vue";
 import { RouterLink } from "vue-router";
-
-interface RouteProps {
-  href: string;
-  label: string;
-}
-
-const routeList: RouteProps[] = [
-  {
-    href: "dashboard",
-    label: "Dashboard",
-  },
-  {
-    href: "historical",
-    label: "Historical",
-  },
-];
-
-const mode = useColorMode();
-mode.value = "dark";
-const isOpen = ref<boolean>(false);
 </script>
 
 <template>
-  <!-- w-[90%] md:w-[70%] lg:w-[75%] lg:max-w-screen-xl -->
-  <header :class="{
-    'sticky border-b shadow-sm z-40 flex items-center p-2 bg-card shadow-md w-full': true,
-  }">
-    <a href="/" class="font-bold text-lg flex items-center">
-      <ChevronsDown
-        class="bg-gradient-to-tr from-primary via-primary/70 to-primary rounded-lg w-9 h-9 mr-2 border text-white" />
-      Alvi Dash
-    </a>
-    <!-- Mobile -->
-    <div class="flex items-center lg:hidden">
-      <Sheet v-model:open="isOpen">
-        <SheetTrigger as-child>
-          <Menu @click="isOpen = true" class="cursor-pointer" />
-        </SheetTrigger>
-
-        <SheetContent side="left" class="flex flex-col rounded-tr-2xl rounded-br-2xl bg-card">
-          <div>
-            <SheetHeader class="mb-4 ml-4">
-              <SheetTitle class="flex items-center">
-                <a href="/" class="flex items-center">
-                  <ChevronsDown
-                    class="bg-gradient-to-tr from-primary/70 via-primary to-primary/70 rounded-lg size-9 mr-2 border text-white" />
-                  Alvi Dash
-                </a>
-              </SheetTitle>
-            </SheetHeader>
-
-            <div class="flex flex-col gap-2">
-              <Button v-for="{ href, label } in routeList" :key="label" as-child variant="ghost"
-                class="justify-start text-base">
-                <RouterLink :to="href">
-                  {{ label }}
-                </RouterLink>
-              </Button>
-            </div>
-          </div>
-
-          <SheetFooter class="flex-col sm:flex-col justify-start items-start">
-            <Separator class="mb-2" />
-            <ToggleTheme />
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+  <div class="navbar bg-base-100 shadow-sm">
+    <div class="navbar-start">
+      <div class="dropdown">
+        <div tabindex="0" role="button" class="btn btn-ghost lg:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h8m-8 6h16" />
+          </svg>
+        </div>
+        <ul tabindex="0" class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
+          <li>
+            <RouterLink :to="'dashboard'">Live</RouterLink>
+          </li>
+          <li>
+            <RouterLink to="historical">Historical</RouterLink>
+          </li>
+        </ul>
+      </div>
+      <a class="btn btn-ghost text-xl">f1.Track</a>
+      <ul class="menu menu-horizontal px-1">
+        <li>
+          <RouterLink :to="'dashboard'">Live</RouterLink>
+        </li>
+        <li>
+          <RouterLink to="historical">Historical</RouterLink>
+        </li>
+      </ul>
     </div>
-
-    <!-- Desktop -->
-    <NavigationMenu class="hidden lg:block">
-      <NavigationMenuList>
-        <NavigationMenuItem>
-          <NavigationMenuLink asChild>
-            <Button v-for="{ href, label } in routeList" :key="label" as-child variant="ghost"
-              class="justify-start text-base">
-              <a :href="href">
-                {{ label }}
-              </a>
-            </Button>
-          </NavigationMenuLink>
-        </NavigationMenuItem>
-      </NavigationMenuList>
-    </NavigationMenu>
-
-    <div class="hidden lg:flex">
-      <ToggleTheme />
+    <div class="navbar-end">
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn m-1">
+          Theme
+          <svg width="12px" height="12px" class="inline-block h-2 w-2 fill-current opacity-60"
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2048 2048">
+            <path d="M1799 349l242 241-1017 1017L7 590l242-241 775 775 775-775z"></path>
+          </svg>
+        </div>
+        <ul tabindex="0" class="dropdown-content bg-base-300 rounded-box z-1 w-52 p-2 shadow-2xl">
+          <li>
+            <input type="radio" name="theme-dropdown" data-set-theme="dark" data-act-class="text-primary"
+              class="theme-controller btn btn-sm btn-block btn-ghost justify-start" aria-label="Default"
+              value="default" />
+          </li>
+          <li>
+            <input type="radio" name="theme-dropdown" data-set-theme="night" data-act-class="text-primary"
+              class="theme-controller btn btn-sm btn-block btn-ghost justify-start" aria-label="Night" value="night" />
+          </li>
+          <li>
+            <input type="radio" name="theme-dropdown" data-set-theme="dim" data-act-class="text-primary"
+              class="theme-controller btn btn-sm btn-block btn-ghost justify-start" aria-label="Dim" value="dim" />
+          </li>
+        </ul>
+      </div>
     </div>
-  </header>
+  </div>
 </template>

@@ -1,26 +1,11 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Drs, SafeftyCar, Session, Status } from '@/models/session.model'
 import { useEventStore, useInformationStore, usePausedStore, useTimeStore } from '@/store/data.store'
 import momentTz from 'moment-timezone'
 
 // const ws = getWs()
 
-const {isReplay} = defineProps({
+const { isReplay } = defineProps({
   isReplay: Boolean,
   ws: WebSocket
 })
@@ -53,7 +38,7 @@ const parseStatusColor = (status: number) => {
     case Status.UnknownState:
     case Status.Inactive:
     case Status.Finished:
-    case Status.Finalised:  
+    case Status.Finalised:
     case Status.Ended:
       return "text-white";
     case Status.Started:
@@ -103,9 +88,9 @@ const parseSafeftyCarColor = (safetyCar: number) => {
 }
 
 const parseRemainingTime = (remaininTime: number) => {
-	// hour := int(w.remainingTime.Seconds() / 3600)
-	// minute := int(w.remainingTime.Seconds()/60) % 60
-	// second := int(w.remainingTime.Seconds()) % 60
+  // hour := int(w.remainingTime.Seconds() / 3600)
+  // minute := int(w.remainingTime.Seconds()/60) % 60
+  // second := int(w.remainingTime.Seconds()) % 60
   const time = remaininTime / 1000
   const hours = time / 3600
   const minutes = (time / 60) % 60
@@ -120,7 +105,7 @@ const goToStart = async () => {
       'Content-type': 'application/json'
     },
     method: 'POST',
-    body: JSON.stringify({skipToStart: true})
+    body: JSON.stringify({ skipToStart: true })
   })
 }
 const skip5Secs = async () => {
@@ -129,7 +114,7 @@ const skip5Secs = async () => {
       'Content-type': 'application/json'
     },
     method: 'POST',
-    body: JSON.stringify({skip5Secs: true})
+    body: JSON.stringify({ skip5Secs: true })
   })
 }
 const skipMinute = async () => {
@@ -138,7 +123,7 @@ const skipMinute = async () => {
       'Content-type': 'application/json'
     },
     method: 'POST',
-    body: JSON.stringify({skipMinute: true})
+    body: JSON.stringify({ skipMinute: true })
   })
 }
 const skip10Minutes = async () => {
@@ -147,7 +132,7 @@ const skip10Minutes = async () => {
       'Content-type': 'application/json'
     },
     method: 'POST',
-    body: JSON.stringify({skip10Minutes: true})
+    body: JSON.stringify({ skip10Minutes: true })
   })
 }
 const pause = async () => {
@@ -156,7 +141,7 @@ const pause = async () => {
       'Content-type': 'application/json'
     },
     method: 'POST',
-    body: JSON.stringify({pause: true})
+    body: JSON.stringify({ pause: true })
   })
 
   usePausedStore.setPaused(await result.json())
@@ -171,18 +156,18 @@ const pause = async () => {
     <!-- Track time -->
     <span>- Track time: {{
       momentTz(useTimeStore.time.Timestamp)
-      .tz(useInformationStore.information.CircuitTimezone).format("YYYY-MM-DD HH:mm:ss") }}</span>
+        .tz(useInformationStore.information.CircuitTimezone).format("YYYY-MM-DD HH:mm:ss") }}</span>
 
     <!-- Track status -->
     <span>- Track status: <span :class="parseStatusColor(useEventStore.event.Status)">{{
-        parseStatus(useEventStore.event.Status) }}</span></span>
+      parseStatus(useEventStore.event.Status) }}</span></span>
 
     <!-- DRS enabled -->
     <span>- DRS enabled: {{ parseDrs(useEventStore.event.DRSEnabled) }}</span>
 
     <!-- Safefty car -->
     <span>- Safefty car: <span :class="parseSafeftyCarColor(useEventStore.event.Status)">{{
-        parseSafeftyCar(useEventStore.event.SafetyCar) }}</span></span>
+      parseSafeftyCar(useEventStore.event.SafetyCar) }}</span></span>
 
     <!-- Current lap -->
     <span v-if="useEventStore.event.Type === Session.Race">- Laps: {{ useEventStore.event.CurrentLap }} / {{
@@ -190,42 +175,18 @@ const pause = async () => {
     <span>- Remaining: {{ parseRemainingTime(useTimeStore.time.Remaining) }}</span>
 
     <div v-if="isReplay" class="flex ml-auto">
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline">
-            Actions
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent class="w-56">
-          <DropdownMenuLabel>Session actions</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem v-on:click="skip5Secs()">
-              <span>Skip 5 seconds</span>
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem v-on:click="skipMinute()">
-              <span>Skip 1 minute</span>
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem v-on:click="skip10Minutes()">
-              <span>Skip 10 minutes</span>
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem v-on:click="goToStart()">
-              <span>Skip to race start</span>
-              <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem v-on:click="pause()">
-            <span>{{ usePausedStore.paused ? 'Resume' : 'Pause' }}</span>
-              <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <button class="btn" popovertarget="popover-1" style="anchor-name:--anchor-1">
+        Actions
+      </button>
+      <ul class="dropdown dropdown-end menu w-52 rounded-md bg-base-300 shadow-sm" popover id="popover-1"
+        style="position-anchor:--anchor-1">
+        <li v-on:click="skip5Secs()"><a>Skip 5 seconds</a></li>
+        <li v-on:click="skipMinute()"><a>Skip 1 minute</a></li>
+        <li v-on:click="skip10Minutes()"><a>Skip 10 minutes</a></li>
+        <li v-on:click="goToStart()"><a>Skip to race start</a></li>
+        <div class="divider"></div>
+        <li v-on:click="pause()"><a>{{ usePausedStore.paused ? 'Resume' : 'Pause' }}</a></li>
+      </ul>
     </div>
   </div>
 </template>

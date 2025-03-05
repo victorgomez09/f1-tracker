@@ -385,10 +385,16 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 			// 	d.panels[x].ProcessEventTime(msg)
 			// }
 
-		case <-replayConnection.RaceControlMessages():
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessRaceControlMessages(msg)
-			// }
+		case msg := <-replayConnection.RaceControlMessages():
+			dataLock.Lock()
+			err := ws.WriteJSON(&DataStruct{
+				DataType: "RACE_CONTROL",
+				Data:     msg,
+			})
+			if err != nil {
+				c.Logger().Error(err)
+			}
+			dataLock.Unlock()
 
 		case <-replayConnection.Weather():
 			// for x := range d.panels {

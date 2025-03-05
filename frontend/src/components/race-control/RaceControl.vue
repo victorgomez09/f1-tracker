@@ -1,57 +1,85 @@
 <script setup lang="ts">
-import { PropType, computed, defineProps } from "vue";
-import moment from "moment";
+import momentTz from 'moment-timezone'
 
-import { F1RaceControlMessage } from "../../models/race-control.model";
-import { sortUtc } from "../../utils/time.util";
+import { useRaceControlStore, useInformationStore } from '@/store/data.store';
+import { RaceControl } from '@/models/race-control.model';
+import { SessionMessage } from '@/models/session.model';
 
-const props = defineProps({
-  messages: Object as PropType<F1RaceControlMessage[]>,
-});
+const parseRaceControlMessage = (raceControl: RaceControl) => {
+    // func (f FlagState) String() string {
+    // 	return [...]string{"None", "Green", "Yellow", "Double Yellow", "Red", "Chequered", "Blue", "Black and White"}[f]
+    // }
+    let prefix = ""
+    let color = "text-white"
 
-console.log("messages", props.messages);
+    switch (raceControl.Flag) {
+        case SessionMessage.GreenFlag:
+            color = "text-green-500"
+            if (raceControl.Msg.startsWith("GREEN LIGHT")) {
+                prefix = "●"
+            } else {
+                prefix = "⚑"
+            }
 
-const messagesSorted = computed(() => props.messages?.sort(sortUtc));
+            break;
+        case SessionMessage.YellowFlag:
+            color = "text-yellow-500"
+            prefix = "⚑"
+
+            break;
+        case SessionMessage.DoubleYellowFlag:
+            color = "text-yellow-500"
+            prefix = "⚑" + "⚑"
+
+            break;
+        case SessionMessage.BlueFlag:
+            color = "text-cyan-500"
+            prefix = "⚑"
+
+            break;
+        case SessionMessage.RedFlag:
+            color = "text-red-500"
+            if (raceControl.Msg.startsWith("RED LIGHT")) {
+                prefix = "●"
+            } else {
+                prefix = "⚑"
+            }
+
+            break;
+        case SessionMessage.BlackAndWhite:
+            color = "text-white"
+            prefix = "⚑" + "⚑"
+
+            break;
+    }
+
+    if (prefix.length != 0) {
+        return {
+            color: color,
+            msg: `${momentTz(raceControl.Timestamp).tz(useInformationStore.information.CircuitTimezone).format("HH:mm:ss")} ${prefix} - ${raceControl.Msg}`
+        }
+        // msgs = append(msgs,
+        //     giu.Style().SetColor(giu.StyleColorText, color).To(giu.Label(fmt.Sprintf("%s %s - %s", r.rcMessages[x].Timestamp.In(r.dataSrc.CircuitTimezone()).
+        //         Format("15:04:05"), prefix, r.rcMessages[x].Msg)).Wrapped(true)))
+    } else {
+        return {
+            color: color,
+            msg: `${momentTz(raceControl.Timestamp).tz(useInformationStore.information.CircuitTimezone).format("HH:mm:ss")} - ${raceControl.Msg}`
+        }
+        // msgs = append(msgs,
+        //     giu.Label(
+        //         fmt.Sprintf("%s - %s",
+        //             r.rcMessages[x].Timestamp.In(r.dataSrc.CircuitTimezone()).
+        //                 Format("15:04:05"), r.rcMessages[x].Msg)).Wrapped(true))
+    }
+}
 </script>
 
 <template>
-  <ul class="flex flex-col gap-2 p-2">
-    <li class="flex items-center text-nowrap" v-for="msg in messagesSorted">
-      <div class="mr-2">
-        <time :dateTime="moment.utc(msg.utc).local().format('HH:mm:ss')">{{
-          moment.utc(msg.utc).local().format("HH:mm:ss")
-        }}</time>
-        {{ "·" }}
-        <time
-          class="text-gray-600"
-          :dateTime="moment.utc(msg.utc).format('HH:mm')"
-        >
-          {{ moment.utc(msg.trackTime).format("HH:mm") }}
-        </time>
-      </div>
-
-      <div class="flex items-center col-span-11 gap-1 text-left">
-        <div v-if="msg.flag">
-          <div
-            class="badge badge-outline"
-            :class="[
-              {
-                'badge-warning':
-                  msg.flag === 'YELLOW' || msg.flag === 'DOUBLE YELLOW',
-              },
-              { 'badge-error': msg.flag === 'RED' },
-              { 'badge-success': msg.flag === 'GREEN' },
-              { 'badge-info': msg.flag === 'BLUE' },
-              { 'badge-ghost': msg.flag === 'BLACK AND WHITE' },
-              { 'badge-success': msg.flag === 'CLEAR' },
-            ]"
-          >
-            FLAG
-          </div>
+    <div class="overflow-auto">
+        <div v-for="raceControl in useRaceControlStore.raceControl" class="flex items-center mb-1">
+            <span :class="parseRaceControlMessage(raceControl).color">{{ parseRaceControlMessage(raceControl).msg
+                }}</span>
         </div>
-
-        <p class="text-sm">{{ msg.message }}</p>
-      </div>
-    </li>
-  </ul>
+    </div>
 </template>

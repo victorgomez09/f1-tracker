@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import RaceDetails from '@/components/race-details/RaceDetails.vue';
 import TelemetryTable from '@/components/telemetry/TelemetryTable.vue';
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from '@/components/ui/resizable';
+import RaceControl from '@/components/race-control/RaceControl.vue'
 import { generateWsUrl, initWs } from '@/utils/ws.utils';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
@@ -88,32 +84,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1 w-full h-full">
-    <div class="bg-secondary p-2 rounded-md">
+  <div class="flex flex-col gap-1.5 w-full h-full">
+    <div class="bg-base-100 p-2 rounded-md">
       <RaceDetails :isReplay="true"></RaceDetails>
     </div>
 
-    <ResizablePanelGroup id="demo-group-1" direction="horizontal" class="w-full">
-      <ResizablePanel id="demo-panel-1" :default-size="50" class="p-1 bg-secondary rounded-md">
-        <TelemetryTable>
-        </TelemetryTable>
-      </ResizablePanel>
-      <ResizableHandle id="demo-handle-1" />
-      <ResizablePanel id="demo-panel-2" :default-size="50">
-        <ResizablePanelGroup id="demo-group-2" direction="vertical">
-          <ResizablePanel id="demo-panel-3" :default-size="25">
-            <div class="flex h-full items-center justify-center p-6">
-              <span class="font-semibold">Two</span>
-            </div>
-          </ResizablePanel>
-          <ResizableHandle id="demo-handle-2" />
-          <ResizablePanel id="demo-panel-4" :default-size="75">
-            <div class="flex h-full items-center justify-center p-6">
-              <span class="font-semibold">Three</span>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+    <div class="grid grid-cols-8 gap-1.5">
+      <div class="bg-base-100 w-full col-span-6 rounded-md">
+        <TelemetryTable></TelemetryTable>
+      </div>
+
+      <div class="bg-base-100 p-1 w-full col-span-2 rounded-md">
+        <RaceControl></RaceControl>
+      </div>
+    </div>
   </div>
 </template>

@@ -44,3 +44,14 @@ export enum SafeftyCar {
 	SafetyCar = 3,
 	SafetyCarEnding = 4
 }
+
+export enum SessionMessage {
+	NoFlag = 0,
+	GreenFlag = 1,
+	YellowFlag = 2,
+	DoubleYellowFlag = 3,
+	RedFlag = 4,
+	ChequeredFlag = 5,
+	BlueFlag = 6,
+	BlackAndWhite = 7
+}

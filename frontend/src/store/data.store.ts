@@ -7,6 +7,7 @@ import { Event } from "@/models/event.model";
 import { General } from "@/models/general.model";
 import { Information } from "@/models/information.model";
 import { Time } from "@/models/time.model";
+import { RaceControl } from "@/models/race-control.model";
 
 export const useDriverStore = reactive({
   drivers: [] as Driver[],
@@ -69,5 +70,12 @@ export const usePausedStore = reactive({
   paused: false,
   setPaused(paused: boolean) {
     this.paused = paused;
+  },
+});
+
+export const useRaceControlStore = reactive({
+  raceControl: [] as RaceControl[],
+  addRaceControl(raceControl: RaceControl) {
+    this.raceControl.push(raceControl)
   },
 });
