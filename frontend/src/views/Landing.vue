@@ -1,7 +1,3 @@
-<script setup lang="ts">
-import { Button } from '@/components/ui/button';
-</script>
-
 <template>
   <div className="container mx-auto max-w-screen-lg px-4">
     <section className="flex h-full w-full flex-col items-center pt-20 sm:justify-center sm:pt-0">
@@ -14,11 +10,11 @@ import { Button } from '@/components/ui/button';
 
       <div className="flex flex-wrap gap-4">
         <RouterLink to="/dashboard">
-          <Button>Go to Dashboard</Button>
+          <button class="btn btn-primary">Go to live</button>
         </RouterLink>
 
         <RouterLink to="/historical">
-          <Button variant="outline">Historical races</Button>
+          <button class="btn btn-outline">Historical races</button>
         </RouterLink>
       </div>
     </section>

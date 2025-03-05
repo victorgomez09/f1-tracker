@@ -280,8 +280,8 @@ const getPilanePosition = (driver: Driver) => {
           <td :style="{ color: driver.HexColor }"> {{ driver.Position }} {{ driver.ShortName }}</td>
           <!-- Micro sectors -->
           <td class="flex items-center gap-0.5">
-            <div v-for="(status, index) in driver.Segment" class="flex items-center rounded-md">
-              <div class="border size-2" :class="getMinisectorColor(status)"></div>
+            <div v-for="(status, index) in driver.Segment" class="flex items-center">
+              <div class="size-2" :class="getMinisectorColor(status)" :style="{ borderRadius: '.15em' }"></div>
               <div v-if="
                 index == useEventStore.event.Sector1Segments - 1 ||
                 index ==
@@ -297,15 +297,15 @@ const getPilanePosition = (driver: Driver) => {
           <td>{{ parseDuration(driver.FastestLap) }}</td>
           <!-- Gap -->
           <td>
-            <span class="flex items-center justify-between gap-0.5 px-1 py-1 font-semibold">
+            <span class="flex items-center justify-between gap-0.5 font-semibold">
               {{ `${parseDuration(driver.TimeDiffToPositionAhead) !== '' ? '+' +
                 parseDuration(driver.TimeDiffToPositionAhead) : parseDuration(driver.TimeDiffToPositionAhead)}` }}
             </span>
 
-            <span class="flex items-center justify-between gap-0.5 px-1 py-1 font-thin">
+            <!-- <span class="flex items-center justify-between gap-0.5 font-thin">
               {{ `${parseDuration(driver.TimeDiffToFastest) !== '' ? '+' +
                 parseDuration(driver.TimeDiffToFastest) : parseDuration(driver.TimeDiffToFastest)}` }}
-            </span>
+            </span> -->
           </td>
           <!-- s1 -->
           <td :class="parseTimeColor(

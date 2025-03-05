@@ -84,17 +84,17 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-1.5 w-full h-full">
+  <div class="flex flex-col gap-1.5 w-full">
     <div class="bg-base-100 p-2 rounded-md">
       <RaceDetails :isReplay="true"></RaceDetails>
     </div>
 
-    <div class="grid grid-cols-8 gap-1.5">
+    <div class="grid grid-cols-8 gap-1.5 max-h-6/12">
       <div class="bg-base-100 w-full col-span-6 rounded-md">
         <TelemetryTable></TelemetryTable>
       </div>
 
-      <div class="bg-base-100 p-1 w-full col-span-2 rounded-md">
+      <div class="bg-base-100 p-1 w-full col-span-2 rounded-md overflow-auto">
         <RaceControl></RaceControl>
       </div>
     </div>

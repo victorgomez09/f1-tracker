@@ -77,9 +77,10 @@ const parseRaceControlMessage = (raceControl: RaceControl) => {
 
 <template>
     <div class="overflow-auto">
-        <div v-for="raceControl in useRaceControlStore.raceControl" class="flex items-center mb-1">
-            <span :class="parseRaceControlMessage(raceControl).color">{{ parseRaceControlMessage(raceControl).msg
-                }}</span>
+        <div v-for="raceControl in useRaceControlStore.raceControl" class="flex items-center mb-2">
+            <span :class="parseRaceControlMessage(raceControl).color" class="leading-none">
+                {{ parseRaceControlMessage(raceControl).msg }}
+            </span>
         </div>
     </div>
 </template>
