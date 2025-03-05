@@ -34,7 +34,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Session } from '@/models/session.model';
+import { HistoricalSession, Session } from '@/models/session.model';
 import moment from 'moment';
 import { useRouter } from 'vue-router';
 
@@ -85,7 +85,7 @@ const columns: ColumnDef<Historical>[] = [
       }, () => ['Type', h(ArrowUpDown, { class: 'ml-2 h-4 w-4' })])
     },
     cell: ({ row }) => {
-        const result = Session[row.getValue('Type') as number]
+        const result = HistoricalSession[row.getValue('Type') as number]
         return h('div', result)
     },
   },

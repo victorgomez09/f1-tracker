@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { useDriverStore } from '@/store/data.store';
-import { parseData } from '@/utils/parse-data.utils';
-import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import Telemetry from './Telemetry.vue'
-import TelemetryTable from '@/components/telemetry/TelemetryTable.vue';
 import RaceDetails from '@/components/race-details/RaceDetails.vue';
-import { generateWsUrl, getWs, initWs } from '@/utils/ws.utils';
+import TelemetryTable from '@/components/telemetry/TelemetryTable.vue';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable';
+import { generateWsUrl, initWs } from '@/utils/ws.utils';
+import { onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute()
 const raceName = route.params.eventName
@@ -19,7 +21,7 @@ const raceName = route.params.eventName
 
 // const dataUpdated = ref(false);
 
-  //   const wsUrl = "ws://localhost:3001";
+//   const wsUrl = "ws://localhost:3001";
 // const initWebsocket = (handleMessage: any) => {
 //   if (retry.value) {
 //     clearTimeout(retry.value);
@@ -91,8 +93,27 @@ onMounted(() => {
       <RaceDetails :isReplay="true"></RaceDetails>
     </div>
 
-    <div class="bg-secondary p-2 rounded-md">
-      <TelemetryTable></TelemetryTable>
-    </div>
+    <ResizablePanelGroup id="demo-group-1" direction="horizontal" class="w-full">
+      <ResizablePanel id="demo-panel-1" :default-size="50" class="p-1 bg-secondary rounded-md">
+        <TelemetryTable>
+        </TelemetryTable>
+      </ResizablePanel>
+      <ResizableHandle id="demo-handle-1" />
+      <ResizablePanel id="demo-panel-2" :default-size="50">
+        <ResizablePanelGroup id="demo-group-2" direction="vertical">
+          <ResizablePanel id="demo-panel-3" :default-size="25">
+            <div class="flex h-full items-center justify-center p-6">
+              <span class="font-semibold">Two</span>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle id="demo-handle-2" />
+          <ResizablePanel id="demo-panel-4" :default-size="75">
+            <div class="flex h-full items-center justify-center p-6">
+              <span class="font-semibold">Three</span>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   </div>
 </template>

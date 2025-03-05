@@ -40,9 +40,11 @@ func main() {
 }
 
 type actions struct {
-	SkipToStart bool
-	Skip5Secs   bool
-	SkipMinute  bool
+	SkipToStart   bool
+	Skip5Secs     bool
+	SkipMinute    bool
+	Skip10Minutes bool
+	Pause         bool
 }
 
 func HandleActions(c echo.Context) error {
@@ -60,11 +62,15 @@ func HandleActions(c echo.Context) error {
 		replayConnection.SkipToSessionStart()
 	} else if a.SkipMinute {
 		replayConnection.IncrementTime(time.Minute * 1)
-	} else {
+	} else if a.Skip10Minutes {
+		replayConnection.IncrementTime(time.Minute * 10)
+	} else if a.Skip5Secs {
 		replayConnection.IncrementTime(time.Second * 5)
+	} else {
+		replayConnection.TogglePause()
 	}
 
-	return c.JSON(http.StatusCreated, a)
+	return c.JSON(http.StatusCreated, replayConnection.IsPaused())
 }
 
 // func HandleWebsocket(c echo.Context) error {
@@ -300,7 +306,7 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 		Data:     replayConnection.TimeLostInPitlane(),
 	})
 	if err2 != nil {
-		c.Logger().Error(err)
+		c.Logger().Error(err2)
 	}
 	dataLock.Unlock()
 	// Circuit data
@@ -310,7 +316,7 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 		Data:     replayConnection.CircuitTimezone().String(),
 	})
 	if err3 != nil {
-		c.Logger().Error(err)
+		c.Logger().Error(err3)
 	}
 	dataLock.Unlock()
 

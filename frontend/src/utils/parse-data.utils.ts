@@ -4,6 +4,7 @@ import {
   useEventStore,
   useGeneralStore,
   useInformationStore,
+  usePausedStore,
   useSessionStore,
   useTelemetryStore,
   useTimeStore,

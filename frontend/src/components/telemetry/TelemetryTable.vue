@@ -9,7 +9,7 @@ import {
 } from "@/store/data.store";
 import { useTelemetryStore } from "@/store/data.store";
 import { Driver, DriverLocation, PitStop } from "@/models/driver.model";
-import { Session } from "@/models/session.model";
+import { HistoricalSession, Session } from "@/models/session.model";
 import moment from "moment";
 
 const sorted = computed(() =>
@@ -247,13 +247,13 @@ const getPilanePosition = (driver: Driver) => {
 </script>
 
 <template>
-  <div class="flex flex-col flex-1 w-full">
+  <div class="flex flex-col flex-1 w-full overflow-auto">
     <div class="flex w-full">
-      <div class="grid items-center gap-2 p-1 px-2 text-sm font-medium text-zinc-500 w-full" :style="{
+      <div class="grid items-center p-1 text-sm font-medium text-zinc-500 w-full" :style="{
         gridTemplateColumns:
-          useSessionStore.session === Session.Race
-            ? '5.5rem 22rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
-            : '5rem 43rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
+          useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession
+            ? '5.5rem 22rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+            : '5rem 10rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
       }">
         <p>Position</p>
         <p>Micro-sectors</p>
@@ -267,10 +267,10 @@ const getPilanePosition = (driver: Driver) => {
         <p>Tire</p>
         <p>Laps</p>
         <p>Pits</p>
-        <p v-if="useSessionStore.session === Session.Race">
+        <p v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
           Pit time
         </p>
-        <p v-if="useSessionStore.session === Session.Race">
+        <p v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
           Pit pos
         </p>
         <p>Spd trp</p>
@@ -279,11 +279,12 @@ const getPilanePosition = (driver: Driver) => {
     </div>
 
     <div class="flex flex-col">
-      <div v-for="driver in sorted" class="flex select-none flex-col gap-1 p-1 border-b">
+      <div v-for="(driver, index) in sorted" class="flex select-none flex-col gap-1 rounded-md border-b w-full"
+        :class="{ 'bg-background': index % 2 == 0 }">
         <div class="grid items-center gap-2 w-full" :style="{
           gridTemplateColumns:
-            useSessionStore.session === Session.Race
-              ? '5.5rem 22rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
+            useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession
+              ? '5.5rem 22rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem'
               : '5rem 43rem 5.5rem 4rem 5rem 5.5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem 5rem',
         }">
           <!-- POSITION -->
@@ -315,7 +316,7 @@ const getPilanePosition = (driver: Driver) => {
           </span>
 
           <!-- GAP -->
-          <div class="flex flex-col justify-between gap-0.5 px-1 py-1">
+          <div class="flex flex-col items-center justify-between gap-0.5 px-1 py-1">
             <span class="flex items-center justify-between gap-0.5 px-1 py-1 font-semibold">
               {{ `${parseDuration(driver.TimeDiffToPositionAhead) !== '' ? '+' +
                 parseDuration(driver.TimeDiffToPositionAhead) : parseDuration(driver.TimeDiffToPositionAhead)}` }}
@@ -389,13 +390,14 @@ const getPilanePosition = (driver: Driver) => {
 
           <!-- Last pit stop time -->
           <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            v-if="useSessionStore.session === Session.Race">
+            v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
             {{ parseLastPitTime(driver.PitStopTimes) }}
           </span>
 
           <!-- Pit position -->
           <span class="flex w-fit items-center justify-between gap-0.5 rounded-md px-1 py-1 font-black"
-            :class="getPilanePosition(driver).positionColor" v-if="useSessionStore.session === Session.Race">
+            :class="getPilanePosition(driver).positionColor"
+            v-if="useSessionStore.session === Session.Race || useSessionStore.session === HistoricalSession.RaceSession">
             {{ getPilanePosition(driver).potentialPositionChange }}
           </span>
 

@@ -64,3 +64,10 @@ export const useGeneralStore = reactive({
     this.general = item;
   },
 });
+
+export const usePausedStore = reactive({
+  paused: false,
+  setPaused(paused: boolean) {
+    this.paused = paused;
+  },
+});

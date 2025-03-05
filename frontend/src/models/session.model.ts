@@ -11,6 +11,16 @@ export enum Session {
 	PreSeason = 9
 }
 
+export enum HistoricalSession {
+	Practice1Session = 0,
+	Practice2Session = 1,
+	Practice3Session = 2,
+	QualifyingSession = 3,
+	SprintSession = 4,
+	RaceSession = 5,
+	PreSeasonSession = 6
+}
+
 export enum Status {
   UnknownState = 0,
 	Inactive = 1,
