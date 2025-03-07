@@ -4,7 +4,7 @@ import {
   useEventStore,
   useGeneralStore,
   useInformationStore,
-  usePausedStore,
+  useLocationStore,
   useRaceControlStore,
   useSessionStore,
   useTelemetryStore,
@@ -18,7 +18,7 @@ export const parseData = (data: ServerResponse) => {
       break;
 
     case "TIME":
-      useTimeStore.addTime(data.data)
+      useTimeStore.addTime(data.data);
       break;
 
     case "INFORMATION":
@@ -46,7 +46,11 @@ export const parseData = (data: ServerResponse) => {
       break;
 
     case "RACE_CONTROL":
-      useRaceControlStore.addRaceControl(data.data)
+      useRaceControlStore.addRaceControl(data.data);
+      break;
+
+    case "LOCATION":
+      useLocationStore.addLocation(data.data);
       break;
 
     default:

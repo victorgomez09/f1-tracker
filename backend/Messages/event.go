@@ -118,8 +118,9 @@ const MaxSegments = 40
 type Event struct {
 	Timestamp time.Time
 
-	Name string
-	Type EventType
+	Name    string
+	Type    EventType
+	Meeting map[string]interface{}
 
 	Status    SessionState
 	Heartbeat bool

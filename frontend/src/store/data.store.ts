@@ -8,6 +8,7 @@ import { General } from "@/models/general.model";
 import { Information } from "@/models/information.model";
 import { Time } from "@/models/time.model";
 import { RaceControl } from "@/models/race-control.model";
+import { Location } from "@/models/location.model";
 
 export const useDriverStore = reactive({
   drivers: [] as Driver[],
@@ -27,7 +28,7 @@ export const useTimeStore = reactive({
 export const useInformationStore = reactive({
   information: {} as Information,
   addInformation(item: string) {
-    this.information.CircuitTimezone = item
+    this.information.CircuitTimezone = item;
   },
 });
 
@@ -76,6 +77,19 @@ export const usePausedStore = reactive({
 export const useRaceControlStore = reactive({
   raceControl: [] as RaceControl[],
   addRaceControl(raceControl: RaceControl) {
-    this.raceControl.push(raceControl)
+    this.raceControl.push(raceControl);
+  },
+});
+
+export const useLocationStore = reactive({
+  locations: [] as Location[],
+  addLocation(item: Location) {
+    const i = this.locations.findIndex(
+      (e) => e.DriverNumber === item.DriverNumber
+    );
+    if (i === -1) {
+      this.locations.push(item);
+    }
+    set(this.locations, i, item);
   },
 });

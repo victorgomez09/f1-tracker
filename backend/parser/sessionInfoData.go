@@ -16,9 +16,10 @@
 package parser
 
 import (
+	"time"
+
 	"github.com/f1gopher/f1gopherlib/Messages"
 	"github.com/f1gopher/f1gopherlib/connection"
-	"time"
 )
 
 func (p *Parser) parseSessionInfoData(dat map[string]interface{}, timestamp time.Time) (Messages.Event, []Messages.Timing, error) {
@@ -26,6 +27,7 @@ func (p *Parser) parseSessionInfoData(dat map[string]interface{}, timestamp time
 	info, _ := dat["Meeting"].(map[string]interface{})
 	timingResult := make([]Messages.Timing, 0)
 
+	p.eventState.Meeting = info
 	p.eventState.Name = info["Name"].(string)
 	// Key
 	// OfficialName

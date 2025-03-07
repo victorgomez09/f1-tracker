@@ -19,7 +19,6 @@ import (
 
 var (
 	replayConnection F1GopherLib
-	err              error
 	lock             = sync.Mutex{}
 )
 
@@ -103,7 +102,6 @@ func HandleHistoricalEvent(c echo.Context) error {
 	eventName := c.Param("eventName")
 	for _, r := range RaceHistory() {
 		if r.Name == eventName {
-			fmt.Println("getting ws")
 			var origins = []string{"http://127.0.0.1:18081", "http://localhost:18081", "https://stunning-system-j4wxj4p5v4j3555p-5173.app.github.dev"}
 			var upgrader = websocket.Upgrader{
 				// Resolve cross-domain problems
@@ -296,7 +294,8 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 		Data:     replayConnection.Session(),
 	})
 	if err != nil {
-		c.Logger().Error(err)
+		ws.Close()
+		c.Logger().Debug(err)
 	}
 	dataLock.Unlock()
 	// General data
@@ -306,7 +305,8 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 		Data:     replayConnection.TimeLostInPitlane(),
 	})
 	if err2 != nil {
-		c.Logger().Error(err2)
+		ws.Close()
+		c.Logger().Debug(err2)
 	}
 	dataLock.Unlock()
 	// Circuit data
@@ -316,7 +316,8 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 		Data:     replayConnection.CircuitTimezone().String(),
 	})
 	if err3 != nil {
-		c.Logger().Error(err3)
+		ws.Close()
+		c.Logger().Debug(err3)
 	}
 	dataLock.Unlock()
 
@@ -334,12 +335,10 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 				Data:     msg,
 			})
 			if err != nil {
-				c.Logger().Error(err)
+				ws.Close()
+				c.Logger().Debug(err)
 			}
 			dataLock.Unlock()
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessDrivers(msg)
-			// }
 
 		case msg := <-replayConnection.Timing():
 			dataLock.Lock()
@@ -348,16 +347,13 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 				Data:     msg,
 			})
 			if err != nil {
-				c.Logger().Error(err)
+				ws.Close()
+				c.Logger().Debug(err)
 			}
 			dataLock.Unlock()
 			// TODO - sometimes get empty records on shutdown so filter these out
 			// if msg.Position == 0 {
 			// 	continue
-			// }
-
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessTiming(msg)
 			// }
 
 		case msg := <-replayConnection.Event():
@@ -367,7 +363,8 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 				Data:     msg,
 			})
 			if err != nil {
-				c.Logger().Error(err)
+				ws.Close()
+				c.Logger().Debug(err)
 			}
 			dataLock.Unlock()
 
@@ -378,12 +375,10 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 				Data:     msg,
 			})
 			if err != nil {
-				c.Logger().Error(err)
+				ws.Close()
+				c.Logger().Debug(err)
 			}
 			dataLock.Unlock()
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessEventTime(msg)
-			// }
 
 		case msg := <-replayConnection.RaceControlMessages():
 			dataLock.Lock()
@@ -392,7 +387,8 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 				Data:     msg,
 			})
 			if err != nil {
-				c.Logger().Error(err)
+				ws.Close()
+				c.Logger().Debug(err)
 			}
 			dataLock.Unlock()
 
@@ -406,10 +402,17 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 			// 	d.panels[x].ProcessRadio(msg)
 			// }
 
-		case <-replayConnection.Location():
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessLocation(msg)
-			// }
+		case msg := <-replayConnection.Location():
+			dataLock.Lock()
+			err := ws.WriteJSON(&DataStruct{
+				DataType: "LOCATION",
+				Data:     msg,
+			})
+			if err != nil {
+				ws.Close()
+				c.Logger().Debug(err)
+			}
+			dataLock.Unlock()
 
 		case msg := <-replayConnection.Telemetry():
 			dataLock.Lock()
@@ -418,21 +421,10 @@ func GetHistoricalData(c echo.Context, ws *websocket.Conn, event *RaceEvent) F1G
 				Data:     msg,
 			})
 			if err != nil {
-				c.Logger().Error(err)
+				ws.Close()
+				c.Logger().Debug(err)
 			}
 			dataLock.Unlock()
-			// for x := range d.panels {
-			// 	d.panels[x].ProcessTelemetry(msg)
-			// }
 		}
-
-		// Read
-		// _, read, errRes := ws.ReadMessage()
-		// if errRes != nil {
-		// 	c.Logger().Error(errRes)
-		// }
-		// if len(read) > 0 {
-		// 	fmt.Printf("%s\n", read)
-		// }
 	}
 }

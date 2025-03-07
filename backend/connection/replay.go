@@ -157,7 +157,6 @@ func (r *replay) readEntries() {
 			r.dataFiles[x].data.Scan()
 			line := r.dataFiles[x].data.Text()
 
-			fmt.Println("dataStartTime", dataStartTime)
 			r.dataFiles[x].nextLineTime, r.dataFiles[x].nextLine, err = r.uncompressedDataTime(line, dataStartTime)
 			if err != nil {
 				continue

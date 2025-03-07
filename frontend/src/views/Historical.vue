@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Historical } from '@/models/historical.model';
-import { onMounted, ref, Ref } from 'vue';
+import { computed, onMounted, ref, Ref } from 'vue';
 import { HistoricalSession } from '@/models/session.model';
 import moment from 'moment';
 import { useRouter } from 'vue-router';
@@ -13,31 +13,38 @@ onMounted(async () => {
 
   data.value = await result.json()
 })
+
+const parsedEvents = computed(() => {
+  return data.value.filter(event => event.Type !== HistoricalSession.PreSeasonSession)
+})
 </script>
 
 <template>
-  <div class="overflow-x-auto w-full">
-    <table class="table table-zebra w-full">
-      <!-- head -->
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Country</th>
-          <th>Event type</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="event in data">
-          <th v-on:click="router.push({ name: 'historical', params: { eventName: event.Name } })"
-            class="cursor-pointer underline hover:font-bold">
-            {{ event.Name }}
-          </th>
-          <td>{{ event.Country }}</td>
-          <td>{{ HistoricalSession[event.Type] }}</td>
-          <td>{{ moment(event.EventTime).format("YYYY-MM-DD") }}</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="flex flex-col gap-2 p-2">
+    <input type="text" placeholder="Search event" class="input">
+    <div class="overflow-x-auto w-full">
+      <table class="table table-zebra w-full">
+        <!-- head -->
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Country</th>
+            <th>Event type</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="event in parsedEvents">
+            <th v-on:click="router.push({ name: 'historical', params: { eventName: event.Name } })"
+              class="cursor-pointer underline hover:font-bold">
+              {{ event.Name }}
+            </th>
+            <td>{{ event.Country }}</td>
+            <td>{{ HistoricalSession[event.Type] }}</td>
+            <td>{{ moment(event.EventTime).format("YYYY-MM-DD") }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>

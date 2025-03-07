@@ -15,7 +15,13 @@ const router = createRouter({
     },
     {
       path: "/historical",
-      component: () => import("../views/Historical.vue"),
+      component: () => import("../components/layouts/AppLayout.vue"),
+      children: [
+        {
+          path: '',
+          component: () => import("../views/Historical.vue"),
+        }
+      ]
     },
     {
       path: "/historical/:eventName",

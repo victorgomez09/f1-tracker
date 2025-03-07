@@ -2,6 +2,7 @@ export type Event = {
   Timestamp: Date;
   Name: number;
   Type: number;
+  Meeting: Meeting;
   Status: number;
   Heartbeat: boolean;
   CurrentLap: number;
@@ -18,4 +19,14 @@ export type Event = {
   SessionStartTime: Date;
   ClockStopped: boolean;
   DRSEnabled: number;
+};
+
+export type Meeting = {
+  Circuit: { Key: number; ShortName: string };
+  Country: { Code: string; Key: number; Name: string };
+  Key: number;
+  Location: string;
+  Name: string;
+  Number: number;
+  OfficialName: string;
 };
