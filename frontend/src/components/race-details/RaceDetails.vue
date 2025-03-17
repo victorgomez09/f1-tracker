@@ -100,7 +100,8 @@ const parseRemainingTime = (remaininTime: number) => {
 }
 
 const goToStart = async () => {
-  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  // await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  await fetch(`http://localhost:300/actions`, {
     headers: {
       'Content-type': 'application/json'
     },
@@ -109,7 +110,8 @@ const goToStart = async () => {
   })
 }
 const skip5Secs = async () => {
-  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  // await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  await fetch(`http://localhost:3000/actions`, {
     headers: {
       'Content-type': 'application/json'
     },
@@ -118,7 +120,8 @@ const skip5Secs = async () => {
   })
 }
 const skipMinute = async () => {
-  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  // await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  await fetch(`http://localhost:3000/actions`, {
     headers: {
       'Content-type': 'application/json'
     },
@@ -127,7 +130,8 @@ const skipMinute = async () => {
   })
 }
 const skip10Minutes = async () => {
-  await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  // await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  await fetch(`http://localhost:3000/actions`, {
     headers: {
       'Content-type': 'application/json'
     },
@@ -136,7 +140,8 @@ const skip10Minutes = async () => {
   })
 }
 const pause = async () => {
-  const result = await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  // const result = await fetch(`https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/actions`, {
+  const result = await fetch(`http://localhost:3000/actions`, {
     headers: {
       'Content-type': 'application/json'
     },
@@ -149,7 +154,7 @@ const pause = async () => {
 </script>
 
 <template>
-  <div class="flex items-center gap-2" v-if="useInformationStore.information.CircuitTimezone">
+  <div class="flex items-center gap-2 p-1" v-if="useInformationStore.information.CircuitTimezone">
     <!-- Name -->
     <span>{{ useEventStore.event.Name }}: {{ parseEventType(useEventStore.event.Type) }}</span>
 
@@ -175,7 +180,7 @@ const pause = async () => {
     <span>- Remaining: {{ parseRemainingTime(useTimeStore.time.Remaining) }}</span>
 
     <div v-if="isReplay" class="flex ml-auto">
-      <button class="btn" popovertarget="popover-1" style="anchor-name:--anchor-1">
+      <button class="btn btn-sm" popovertarget="popover-1" style="anchor-name:--anchor-1">
         Actions
       </button>
       <ul class="dropdown dropdown-end menu w-52 rounded-md bg-base-300 shadow-sm" popover id="popover-1"

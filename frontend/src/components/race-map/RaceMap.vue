@@ -1,16 +1,18 @@
 <script setup lang="ts">
+import { DriverLocation } from "@/models/driver.model";
+import { Location } from "@/models/location.model";
 import { useDriverStore, useEventStore, useLocationStore, useTimeStore } from "@/store/data.store";
 import moment from "moment";
 import { computed, onMounted, ref } from "vue";
-import { Location } from "@/models/location.model"
 
 const sortPos = (a: Location, b: Location) => {
   const aPos = useDriverStore.drivers.find(driver => driver.Number === a.DriverNumber)
   const bPos = useDriverStore.drivers.find(driver => driver.Number === b.DriverNumber)
-  return (aPos?.Position || 0) - (bPos?.Position || 0);
+
+  return aPos!.Position - bPos!.Position;
 };
 
-const space = 1000;
+const space = 500;
 const rad = (deg: number) => deg * (Math.PI / 180);
 const rotate = (x: number, y: number, a: number, px: number, py: number) => {
   const c = Math.cos(rad(a));
@@ -34,13 +36,6 @@ const minX = ref<number | null>(null);
 const minY = ref<number | null>(null);
 const widthX = ref<number | null>(null);
 const widthY = ref<number | null>(null);
-const positions = computed(() =>
-  useLocationStore.locations
-    ? useLocationStore.locations.sort((a, b) =>
-      moment.utc(b.Timestamp).diff(moment.utc(a.Timestamp))
-    )
-    : null
-);
 const xS = computed(() => ogPoints.value?.map((item) => item.x));
 const yS = computed(() => ogPoints.value?.map((item) => item.y));
 
@@ -52,16 +47,24 @@ const rotatedPos = (pos: Location) =>
     (Math.max(...xS.value!) - Math.min(...xS.value!)) / 2,
     (Math.max(...yS.value!) - Math.min(...yS.value!)) / 2
   )
-// const out = (pos: any) =>
-//   () =>
-//     pos.status === "OUT" ||
-//     pos.status === "RETIRED" ||
-//     pos.status === "STOPPED"
-const transformTanslate = (pos: any) =>
+
+const out = (pos: Location) => {
+  const driver = useDriverStore.drivers.find(driver => driver.Number === pos.DriverNumber)
+
+  return driver?.Location === DriverLocation.OutOfRace ||
+    driver?.Location === DriverLocation.Stopped ||
+    driver?.Location === DriverLocation.NoLocation
+}
+
+const transformTanslate = (pos: Location) =>
   [
     `translateX(${rotatedPos(pos).x}px)`,
     `translateY(${rotatedPos(pos).y}px)`,
   ].join(" ");
+
+const getDriver = (pos: Location) => {
+  return useDriverStore.drivers.find(driver => driver.Number === pos.DriverNumber)
+}
 
 onMounted(async () => {
   try {
@@ -113,26 +116,25 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="!points || !minX || !minY || !widthX || !widthY" class="flex h-full w-full items-center justify-center">
+  <div v-if="!points || !minX || !minY || !widthX || !widthY" class="flex size-64 items-center justify-center">
     <div class="h-5/6 w-5/6 animate-pulse rounded-lg bg-gray-700" />
   </div>
-  <svg v-else :viewBox="minX + ' ' + minY + ' ' + widthX + ' ' + widthY" class="w-full h-full"
+  <svg v-else :viewBox="minX / 3 + ' ' + minY + ' ' + widthX + ' ' + widthY" class="size-8/12"
     xmlns="http://www.w3.org/2000/svg">
-    <path class="bg-secondary" stroke-width="300" stroke-linecap="round" fill="transparent"
+    <path class="stroke-gray-600" stroke-width="200" stroke-linecap="round" fill="transparent"
       :d="'M' + points![0].x + ',' + points![0].y + ' ' + points?.map((point) => 'L' + point.x + ',' + point.y).join(' ')" />
     <path stroke="white" stroke-width="60" stroke-linecap="round" fill="transparent"
       :d="'M' + points![0].x + ',' + points![0].y + ' ' + points!.map((point) => 'L' + point.x + ',' + point.y).join(' ')" />
-    <!-- <g v-for="pos in positions!.sort(sortPos).reverse()" :class="{ 'opacity-30': out(pos) }" class="fill-zinc-700" -->
-    <g v-for="pos in positions!.sort(sortPos).reverse()" class="fill-zinc-700" :style="{
-      transition: 'all 1s linear',
-      transform: transformTanslate(pos),
-      // ...(pos.teamColor && { fill: '#' + pos.teamColor }),
-    }">
+    <g v-for="pos in useLocationStore.locations!.sort(sortPos)" :class="{ 'opacity-30': out(pos) }"
+      class="fill-zinc-700" :style="{
+        transition: 'all 1s linear',
+        transform: transformTanslate(pos),
+      }">
       <circle :id="`map.driver.${pos.DriverNumber}.circle`" r="120" />
       <text :id="`map.driver.${pos.DriverNumber}.text`" font-weight="bold" :font-size="120 * 3" :style="{
         transform: 'translateX(150px) translateY(-120px)',
       }">
-        {{ pos.DriverNumber }}
+        {{ getDriver(pos)?.ShortName }}
       </text>
     </g>
   </svg>

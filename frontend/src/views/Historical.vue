@@ -9,7 +9,8 @@ const router = useRouter()
 const data: Ref<Array<Historical>> = ref([]);
 
 onMounted(async () => {
-  const result = await fetch("https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/historical")
+  // const result = await fetch("https://stunning-system-j4wxj4p5v4j3555p-3000.app.github.dev/historical")
+  const result = await fetch("http://localhost:3000/historical")
 
   data.value = await result.json()
 })

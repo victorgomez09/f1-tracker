@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { computed, isProxy, onMounted, ref, toRaw } from "vue";
+import { onMounted, ref } from "vue";
 
-import mockData from "../../example_data.json";
-import { viewMode } from "../store/viewMode.store";
-import { sortPos } from "../utils/position.utils";
-import { sortUtc } from "../utils/time.util";
 import TelemetryTable from "@/components/telemetry/TelemetryTable.vue";
 import { parseData } from "@/utils/parse-data.utils";
 
